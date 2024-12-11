@@ -14,7 +14,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 requires-python = ">=3.9,<3.13"
-dependencies = ["ray[default]>=2.20"]
+dependencies = ["ray[default]>=2.20", "sunray>=0.9"]
 
 [project.urls]
 homepage   = "https://github.com/zen-xu/ray-graph"

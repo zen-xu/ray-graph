@@ -93,6 +93,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/49/97/fa78e3d2f65c02c8e1268b9aba606569fe97f6c8f7c2d74394553347c145/rsa-4.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/06/bc/706838af28a542458bffe74a5d0772ca7f207b5495cd9fccfce61ef71f2a/smart_open-7.0.5-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/15/62/399e923d5981e6a255ec682f074a47ff0376d21c1ff3a4f87647b0165225/sunray-0.9.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/8e/02/650adf160774a43c206011d23283d568d2dbcd43cf7b40dff0a880885b47/textual-0.89.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/35/35/5055ab8d215af853d07bbff1a74edf48f91ed308f037380a5ca52dd73348/trove_classifiers-2024.10.21.16-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/26/9f/ad63fc0248c5379346306f8668cda6e2e2e9c95e01216d2b8ffd9ff037d0/typing_extensions-4.12.2-py3-none-any.whl
@@ -180,6 +181,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/49/97/fa78e3d2f65c02c8e1268b9aba606569fe97f6c8f7c2d74394553347c145/rsa-4.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/06/bc/706838af28a542458bffe74a5d0772ca7f207b5495cd9fccfce61ef71f2a/smart_open-7.0.5-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/15/62/399e923d5981e6a255ec682f074a47ff0376d21c1ff3a4f87647b0165225/sunray-0.9.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/8e/02/650adf160774a43c206011d23283d568d2dbcd43cf7b40dff0a880885b47/textual-0.89.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/35/35/5055ab8d215af853d07bbff1a74edf48f91ed308f037380a5ca52dd73348/trove_classifiers-2024.10.21.16-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/26/9f/ad63fc0248c5379346306f8668cda6e2e2e9c95e01216d2b8ffd9ff037d0/typing_extensions-4.12.2-py3-none-any.whl
@@ -267,6 +269,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/49/97/fa78e3d2f65c02c8e1268b9aba606569fe97f6c8f7c2d74394553347c145/rsa-4.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/06/bc/706838af28a542458bffe74a5d0772ca7f207b5495cd9fccfce61ef71f2a/smart_open-7.0.5-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/15/62/399e923d5981e6a255ec682f074a47ff0376d21c1ff3a4f87647b0165225/sunray-0.9.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/8e/02/650adf160774a43c206011d23283d568d2dbcd43cf7b40dff0a880885b47/textual-0.89.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/35/35/5055ab8d215af853d07bbff1a74edf48f91ed308f037380a5ca52dd73348/trove_classifiers-2024.10.21.16-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/26/9f/ad63fc0248c5379346306f8668cda6e2e2e9c95e01216d2b8ffd9ff037d0/typing_extensions-4.12.2-py3-none-any.whl
@@ -348,6 +351,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/49/97/fa78e3d2f65c02c8e1268b9aba606569fe97f6c8f7c2d74394553347c145/rsa-4.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/06/bc/706838af28a542458bffe74a5d0772ca7f207b5495cd9fccfce61ef71f2a/smart_open-7.0.5-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/15/62/399e923d5981e6a255ec682f074a47ff0376d21c1ff3a4f87647b0165225/sunray-0.9.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/35/35/5055ab8d215af853d07bbff1a74edf48f91ed308f037380a5ca52dd73348/trove_classifiers-2024.10.21.16-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/26/9f/ad63fc0248c5379346306f8668cda6e2e2e9c95e01216d2b8ffd9ff037d0/typing_extensions-4.12.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ce/d9/5f4c13cecde62396b0d3fe530a50ccea91e7dfc1ccf0e09c228841bb5ba8/urllib3-2.2.3-py3-none-any.whl
@@ -2682,9 +2686,10 @@ packages:
 - pypi: .
   name: ray-graph
   version: 0.1.0b0
-  sha256: b1ad21b8a06980ab64d49618d4c80b05b52f38c7141f3e32e0a6ec96b486af3c
+  sha256: f12e12582d80b3a30786e30c05bbce31c881d73674b2e4ab42cb44331f100630
   requires_dist:
   - ray[default]>=2.20
+  - sunray>=0.9
   requires_python: '>=3.9,<3.13'
   editable: true
 - conda: https://conda.anaconda.org/conda-forge/linux-64/readline-8.2-h8228510_1.conda
@@ -2820,6 +2825,14 @@ packages:
   - requests ; extra == 'webhdfs'
   - zstandard ; extra == 'zst'
   requires_python: '>=3.7,<4.0'
+- pypi: https://files.pythonhosted.org/packages/15/62/399e923d5981e6a255ec682f074a47ff0376d21c1ff3a4f87647b0165225/sunray-0.9.0-py3-none-any.whl
+  name: sunray
+  version: 0.9.0
+  sha256: dd62a35a4866c10c178a9c495efa0fe855619d7aa23d2d4733bd4b7fed4ee73c
+  requires_dist:
+  - ray[default]>=2.20,<3.0 ; python_full_version >= '3.9' and python_full_version < '4.0'
+  - typing-extensions>=4.5.0,<5.0.0
+  requires_python: '>=3.9,<3.12'
 - pypi: https://files.pythonhosted.org/packages/8e/02/650adf160774a43c206011d23283d568d2dbcd43cf7b40dff0a880885b47/textual-0.89.1-py3-none-any.whl
   name: textual
   version: 0.89.1
