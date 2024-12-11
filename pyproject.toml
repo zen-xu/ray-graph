@@ -35,14 +35,17 @@ channels  = ["conda-forge"]
 platforms = ["win-64", "linux-64", "osx-64", "osx-arm64"]
 
 [tool.pixi.pypi-dependencies]
-ray_graph  = { path = ".", editable = true }
-pre-commit = "*"
-hatchling  = "*"
-mypy       = "*"
-pytest     = ">=8,<9"
+ray_graph       = { path = ".", editable = true }
+pre-commit      = "*"
+hatchling       = "*"
+mypy            = "*"
+pytest          = ">=8,<9"
+pytest-coverage = "*"
 
 [tool.pixi.tasks]
 lint = "pre-commit run -a"
+test = "pytest"
+cov  = "pytest --cov --cov-report=xml --cov-report=term -q"
 
 # -------------------------------- Ruff --------------------------------
 
@@ -73,8 +76,12 @@ select = [
     "RUF", # ruff-specific-rules
 ]
 ignore = [
+    "D100", # undocumented-public-module
     "D104", # undocumented-public-package
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**.py" = ["D"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
@@ -93,3 +100,49 @@ explicit_package_bases = true
 files                  = "src"
 namespace_packages     = true
 show_error_codes       = true
+disable_error_code     = ["annotation-unchecked"]
+
+# -------------------------------- Coverage --------------------------------
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
+
+[tool.coverage.report]
+exclude_also = [
+    "^\\s*if TYPE_CHECKING:",
+    "^\\s*@overload( |$)",
+    "def __enter__",
+    "def __exit__",
+
+    # Don't complain about missing debug-only code:
+    "def __repr__",
+    "if self\\.debug",
+
+    # Don't complain if tests don't hit defensive assertion code:
+    "raise AssertionError",
+    "raise NotImplementedError",
+
+    # Don't complain if non-runnable code isn't run:
+    "if 0:",
+    "if __name__ == .__main__.:",
+
+    # Don't complain about imports:
+    "^\\s*import ",
+    "^\\s*from ",
+
+    # Don't complain if it is abstractmethod:
+    "@(abc\\.)?abstractmethod",
+
+    # Don't complain if it is property
+    "@property",
+
+    # Don't complain if it is protocol
+    "class .*\\bProtocol\\):",
+
+    # Don't complain if it is ABC
+    "class .*\\(ABC\\):",
+    "class .*\\((abc\\.)?.ABC\\):",
+]
+show_missing = true
+skip_covered = true
