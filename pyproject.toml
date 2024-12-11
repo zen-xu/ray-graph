@@ -1,0 +1,95 @@
+[project]
+name = "ray-graph"
+version = "0.1.0b0"
+authors = [{ name = "ZhengYu, Xu", email = "zen-xu@outlook.com" }]
+description = "Help to build ray actor graph"
+classifiers = [
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+requires-python = ">=3.9,<3.13"
+dependencies = ["ray[default]>=2.20"]
+
+[project.urls]
+homepage   = "https://github.com/zen-xu/ray-graph"
+repository = "https://github.com/zen-xu/ray-graph.git"
+issues     = "https://github.com/zen-xu/ray-graph/issues"
+
+[build-system]
+build-backend = "hatchling.build"
+requires      = ["hatchling"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ray_graph"]
+
+# -------------------------------- Pixi --------------------------------
+
+[tool.pixi.project]
+channels  = ["conda-forge"]
+platforms = ["win-64", "linux-64", "osx-64", "osx-arm64"]
+
+[tool.pixi.pypi-dependencies]
+ray_graph  = { path = ".", editable = true }
+pre-commit = "*"
+hatchling  = "*"
+mypy       = "*"
+pytest     = ">=8,<9"
+
+[tool.pixi.tasks]
+lint = "pre-commit run -a"
+
+# -------------------------------- Ruff --------------------------------
+
+[tool.ruff]
+fix            = true
+line-length    = 99
+target-version = "py39"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pyflakes
+    "F",   # pycodestyle error
+    "W",   # pycodestyle warning
+    "I",   # isort
+    "N",   # pep8-naming
+    "D",   # pydocstyle
+    "UP",  # pyupgrade
+    "TC",  # flake8-type-checking
+    "C4",  # flake8-comprehensions
+    "ISC", # flake8-implicit-str-concat
+    "PIE", # flake8-pie
+    "PT",  # flake8-pytest-style
+    "RET", # flake8-return
+    "SIM", # flake8-simplify
+    "TC",  # flake8-type-checking
+    "ARG", # flake8-unused-arguments
+    "PTH", # flake8-use-pathlib
+    "RUF", # ruff-specific-rules
+]
+ignore = [
+    "D104", # undocumented-public-package
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+lines-after-imports = 2
+lines-between-types = 1
+
+[tool.ruff.format]
+docstring-code-format = true
+
+# -------------------------------- Mypy --------------------------------
+
+[tool.mypy]
+explicit_package_bases = true
+files                  = "src"
+namespace_packages     = true
+show_error_codes       = true
