@@ -1,5 +1,6 @@
 include = ["*.toml"]
 
 [formatting]
-align_entries = true
+column_width        = 90
+align_entries       = true
 inline_table_expand = false

@@ -1,0 +1,43 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  unit-tests:
+    name: unit test ${{ matrix.os }} / ${{ matrix.python-version }}
+    runs-on: ${{ matrix.image }}
+    strategy:
+      matrix:
+        os: [ubuntu, macos, windows]
+        python-version: ["py310", "py311", "py312"]
+        include:
+          - os: ubuntu
+            image: ubuntu-latest
+          - os: macos
+            image: macos-latest
+          - os: windows
+            image: windows-latest
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          environments: ${{  matrix.python-version }}
+          frozen: true
+      - run: >-
+          pixi run -e ${{ matrix.python-version }} test
+          --cov
+          --cov-report=term
+          --cov-report=xml:coverage.${{ matrix.python-version }}.xml
+      - uses: codecov/codecov-action@v4
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      - name: Check for clean working tree
+        run: |
+          git diff --exit-code --stat HEAD
