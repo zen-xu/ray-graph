@@ -4,7 +4,11 @@ import dataclasses as dc
 import datetime as dt
 import sys
 
-from typing import Any, Callable, TypeVar, overload
+from typing import TYPE_CHECKING, Any, TypeVar, overload
+
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 if sys.version_info < (3, 11):
