@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu, macos, windows]
-        python-version: ["py39", "py310", "py311", "py312"]
+        python-version: ["py310", "py311", "py312"]
         include:
           - os: ubuntu
             image: ubuntu-latest
