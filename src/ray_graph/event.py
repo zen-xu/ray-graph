@@ -1,8 +1,16 @@
+from __future__ import annotations
+
 import dataclasses as dc
 import datetime as dt
+import sys
 
-from typing import Any, Callable, Self, TypeVar, dataclass_transform, overload
+from typing import Any, Callable, TypeVar, overload
 
+
+if sys.version_info < (3, 11):
+    from typing_extensions import Self, dataclass_transform
+else:
+    from typing import Self, dataclass_transform
 
 _T = TypeVar("_T")
 

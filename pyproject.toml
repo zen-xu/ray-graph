@@ -4,17 +4,23 @@ version = "0.1.0b0"
 authors = [{ name = "ZhengYu, Xu", email = "zen-xu@outlook.com" }]
 description = "Help to build ray actor graph"
 classifiers = [
-    "License :: OSI Approved :: BSD License",
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
+  "License :: OSI Approved :: BSD License",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
 ]
+readme = "README.md"
 requires-python = ">=3.9,<3.13"
-dependencies = ["ray[default]>=2.20", "sunray>=0.9"]
+
+dependencies = [
+  "ray[default]>=2.20",
+  "sunray>=0.9",
+  "typing-extensions; python_version<'3.11'",
+]
 
 [project.urls]
 homepage   = "https://github.com/zen-xu/ray-graph"
@@ -47,6 +53,25 @@ lint = "pre-commit run -a"
 test = "pytest"
 cov  = "pytest --cov --cov-report=xml --cov-report=term -q"
 
+[tool.pixi.feature.py39.dependencies]
+python = "3.9.*"
+
+[tool.pixi.feature.py310.dependencies]
+python = "3.10.*"
+
+[tool.pixi.feature.py311.dependencies]
+python = "3.11.*"
+
+[tool.pixi.feature.py312.dependencies]
+python = "3.12.*"
+
+[tool.pixi.environments]
+default = ["py312"]
+py39    = ["py39"]
+py310   = ["py310"]
+py311   = ["py311"]
+py312   = ["py312"]
+
 # -------------------------------- Ruff --------------------------------
 
 [tool.ruff]
@@ -56,28 +81,29 @@ target-version = "py39"
 
 [tool.ruff.lint]
 select = [
-    "E",   # pyflakes
-    "F",   # pycodestyle error
-    "W",   # pycodestyle warning
-    "I",   # isort
-    "N",   # pep8-naming
-    "D",   # pydocstyle
-    "UP",  # pyupgrade
-    "TC",  # flake8-type-checking
-    "C4",  # flake8-comprehensions
-    "ISC", # flake8-implicit-str-concat
-    "PIE", # flake8-pie
-    "PT",  # flake8-pytest-style
-    "RET", # flake8-return
-    "SIM", # flake8-simplify
-    "TC",  # flake8-type-checking
-    "ARG", # flake8-unused-arguments
-    "PTH", # flake8-use-pathlib
-    "RUF", # ruff-specific-rules
+  "E",   # pyflakes
+  "F",   # pycodestyle error
+  "W",   # pycodestyle warning
+  "I",   # isort
+  "N",   # pep8-naming
+  "D",   # pydocstyle
+  "UP",  # pyupgrade
+  "TC",  # flake8-type-checking
+  "C4",  # flake8-comprehensions
+  "FA",  # flake8-future-annotations
+  "ISC", # flake8-implicit-str-concat
+  "PIE", # flake8-pie
+  "PT",  # flake8-pytest-style
+  "RET", # flake8-return
+  "SIM", # flake8-simplify
+  "TC",  # flake8-type-checking
+  "ARG", # flake8-unused-arguments
+  "PTH", # flake8-use-pathlib
+  "RUF", # ruff-specific-rules
 ]
 ignore = [
-    "D100", # undocumented-public-module
-    "D104", # undocumented-public-package
+  "D100", # undocumented-public-module
+  "D104", # undocumented-public-package
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -110,39 +136,39 @@ source = ["src"]
 
 [tool.coverage.report]
 exclude_also = [
-    "^\\s*if TYPE_CHECKING:",
-    "^\\s*@overload( |$)",
-    "def __enter__",
-    "def __exit__",
+  "^\\s*if TYPE_CHECKING:",
+  "^\\s*@overload( |$)",
+  "def __enter__",
+  "def __exit__",
 
-    # Don't complain about missing debug-only code:
-    "def __repr__",
-    "if self\\.debug",
+  # Don't complain about missing debug-only code:
+  "def __repr__",
+  "if self\\.debug",
 
-    # Don't complain if tests don't hit defensive assertion code:
-    "raise AssertionError",
-    "raise NotImplementedError",
+  # Don't complain if tests don't hit defensive assertion code:
+  "raise AssertionError",
+  "raise NotImplementedError",
 
-    # Don't complain if non-runnable code isn't run:
-    "if 0:",
-    "if __name__ == .__main__.:",
+  # Don't complain if non-runnable code isn't run:
+  "if 0:",
+  "if __name__ == .__main__.:",
 
-    # Don't complain about imports:
-    "^\\s*import ",
-    "^\\s*from ",
+  # Don't complain about imports:
+  "^\\s*import ",
+  "^\\s*from ",
 
-    # Don't complain if it is abstractmethod:
-    "@(abc\\.)?abstractmethod",
+  # Don't complain if it is abstractmethod:
+  "@(abc\\.)?abstractmethod",
 
-    # Don't complain if it is property
-    "@property",
+  # Don't complain if it is property
+  "@property",
 
-    # Don't complain if it is protocol
-    "class .*\\bProtocol\\):",
+  # Don't complain if it is protocol
+  "class .*\\bProtocol\\):",
 
-    # Don't complain if it is ABC
-    "class .*\\(ABC\\):",
-    "class .*\\((abc\\.)?.ABC\\):",
+  # Don't complain if it is ABC
+  "class .*\\(ABC\\):",
+  "class .*\\((abc\\.)?.ABC\\):",
 ]
 show_missing = true
 skip_covered = true
