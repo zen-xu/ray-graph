@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-import abc
-
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from collections.abc import Callable, Mapping
+
+    from ray_graph.event import Event
 
 
 @dataclass(frozen=True)
@@ -45,8 +45,45 @@ class RayNodeContext:
     """The current node's assigned resources."""
 
 
-class RayNode(abc.ABC):
+_EventT = TypeVar("_EventT", bound="Event")
+_RayNode_co = TypeVar("_RayNode_co", bound="RayNode", covariant=True)
+
+
+class _EventHandler(Generic[_EventT]):
+    def __init__(self, event_t: type[_EventT]) -> None:
+        self.event_t = event_t
+
+    def __call__(self, handler_func: Callable[[_RayNode_co, _EventT], None]) -> Any:
+        self.handler_func = handler_func
+        return self
+
+
+def handle(event_t: type[_EventT]) -> _EventHandler[_EventT]:
+    """Decorator to register an event handler."""
+    return _EventHandler(event_t)
+
+
+class _RayNodeMeta(type):
+    def __new__(cls, name, bases, attrs):
+        attrs.setdefault("_event_handlers", {})
+        event_handlers = attrs["_event_handlers"]
+        for _, attr_value in attrs.items():
+            if isinstance(attr_value, _EventHandler):
+                if attr_value.event_t in event_handlers:
+                    raise ValueError(
+                        f"<class '{attrs["__module__"]}.{attrs["__qualname__"]}'> "
+                        f"got duplicate event handler for {attr_value.event_t}"
+                    )
+                event_handlers[attr_value.event_t] = attr_value
+        # remove event handler functions from attrs
+        attrs = {k: v for k, v in attrs.items() if not isinstance(v, _EventHandler)}
+        return super().__new__(cls, name, bases, attrs)
+
+
+class RayNode(metaclass=_RayNodeMeta):
     """The base class for all RayGraph nodes."""
+
+    _event_handlers: Mapping[Event, _EventHandler]
 
     def remote_init(self, context: RayNodeContext) -> None:
         """Initialize the node in ray cluster."""

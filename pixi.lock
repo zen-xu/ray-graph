@@ -6806,7 +6806,7 @@ packages:
 - pypi: .
   name: ray-graph
   version: 0.1.0b0
-  sha256: 626be342840ef2628696bc6a7657ea4fd1a11cf8d1e6faec7f322dcc0b9a376b
+  sha256: 477674b75e69f01e44a162e61290ead9399c24165a1be25134987b14c4608e08
   requires_dist:
   - ray[default]>=2.20
   - sunray>=0.9
