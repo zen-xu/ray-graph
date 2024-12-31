@@ -19,6 +19,7 @@ dependencies = [
   "ray[default]>=2.20",
   "sunray>=0.9",
   "typing-extensions; python_version<'3.11'",
+  "rustworkx>=0.15",
 ]
 
 [project.urls]
