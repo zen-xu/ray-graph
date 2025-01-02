@@ -109,7 +109,7 @@ class RayNode(metaclass=_RayNodeMeta):
 
     _event_handlers: Mapping[type[Event], _EventHandler[Event]]
 
-    def remote_init(self) -> None:
+    def remote_init(self) -> None:  # pragma: no cover
         """Initialize the node in ray cluster."""
 
 
@@ -118,6 +118,11 @@ class RayNodeActor(sunray.ActorMixin):
 
     def __init__(self, ray_node: RayNode) -> None:
         self.ray_node = ray_node
+
+    @sunray.remote_method
+    def remote_init(self) -> None:
+        """Invoke ray_node remote init method."""
+        self.ray_node.remote_init()
 
     @sunray.remote_method
     def handle(self, event: Event) -> None:
