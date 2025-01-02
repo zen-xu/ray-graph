@@ -84,7 +84,7 @@ class _RayNodeMeta(type):
         return super().__new__(cls, name, bases, attrs)
 
 
-def get_node_context() -> RayNodeContext:
+def get_node_context() -> RayNodeContext:  # pragma: no cover
     """Get the context of the current RayGraph node."""
     global _node_context
     if _node_context is None:

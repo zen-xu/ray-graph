@@ -97,6 +97,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/82/a1/a45f3e30835b553379b3a56ea6c4eb622cf11e72008229af840e4596a8ea/rpds_py-0.22.3-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/49/97/fa78e3d2f65c02c8e1268b9aba606569fe97f6c8f7c2d74394553347c145/rsa-4.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/cb/a0/af448af28514e82f36e7431bc88e933ad043e5a95a7985bd9458a05877c6/rustworkx-0.15.1-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/4b/cf/4f19cdc7fdff3eaeb3064ce6eeb27c63081dba3123fbf904ac6bf0de440c/setproctitle-1.3.4-cp312-cp312-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/06/bc/706838af28a542458bffe74a5d0772ca7f207b5495cd9fccfce61ef71f2a/smart_open-7.0.5-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5f/af/49dafbd64b9c013b24807fb61147361f52a171f570c9ae7973612323a059/sunray-0.10.0-py3-none-any.whl
@@ -191,6 +192,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/75/47/3383ee3bd787a2a5e65a9b9edc37ccf8505c0a00170e3a5e6ea5fbcd97f7/rpds_py-0.22.3-cp312-cp312-macosx_10_12_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/49/97/fa78e3d2f65c02c8e1268b9aba606569fe97f6c8f7c2d74394553347c145/rsa-4.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/37/06/adeed1d166c55920a6a83085e8c8c8b24c8d7708de99f7a814458a3c4529/rustworkx-0.15.1-cp38-abi3-macosx_10_12_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/94/1f/02fb3c6038c819d86765316d2a911281fc56c7dd3a9355dceb3f26a5bf7b/setproctitle-1.3.4-cp312-cp312-macosx_10_13_universal2.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/06/bc/706838af28a542458bffe74a5d0772ca7f207b5495cd9fccfce61ef71f2a/smart_open-7.0.5-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5f/af/49dafbd64b9c013b24807fb61147361f52a171f570c9ae7973612323a059/sunray-0.10.0-py3-none-any.whl
@@ -285,6 +287,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/40/14/aa6400fa8158b90a5a250a77f2077c0d0cd8a76fce31d9f2b289f04c6dec/rpds_py-0.22.3-cp312-cp312-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/49/97/fa78e3d2f65c02c8e1268b9aba606569fe97f6c8f7c2d74394553347c145/rsa-4.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/03/11/95350c7eeade2e61a736f1ca956ee04acb920b7b080ff0c058c40cc7bbf3/rustworkx-0.15.1-cp38-abi3-macosx_11_0_arm64.whl
+      - pypi: https://files.pythonhosted.org/packages/b8/0c/d69e1f91c8f3d3aa74394e9e6ebb818f7d323e2d138ce1127e9462d09ebc/setproctitle-1.3.4-cp312-cp312-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/06/bc/706838af28a542458bffe74a5d0772ca7f207b5495cd9fccfce61ef71f2a/smart_open-7.0.5-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5f/af/49dafbd64b9c013b24807fb61147361f52a171f570c9ae7973612323a059/sunray-0.10.0-py3-none-any.whl
@@ -373,6 +376,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/f2/c7/f82b5be1e8456600395366f86104d1bd8d0faed3802ad511ef6d60c30d98/rpds_py-0.22.3-cp312-cp312-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/49/97/fa78e3d2f65c02c8e1268b9aba606569fe97f6c8f7c2d74394553347c145/rsa-4.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/9c/c6/50f5736f5dac1709c6c8b6ac3470f466fd793dd25c081923942caf13051f/rustworkx-0.15.1-cp38-abi3-win_amd64.whl
+      - pypi: https://files.pythonhosted.org/packages/44/5c/6e6665b5fd800206a9e537ab0d2630d7b9b31b4697d931ed468837cc9cf5/setproctitle-1.3.4-cp312-cp312-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/06/bc/706838af28a542458bffe74a5d0772ca7f207b5495cd9fccfce61ef71f2a/smart_open-7.0.5-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5f/af/49dafbd64b9c013b24807fb61147361f52a171f570c9ae7973612323a059/sunray-0.10.0-py3-none-any.whl
@@ -481,6 +485,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/4d/cf/96f1fd75512a017f8e07408b6d5dbeb492d9ed46bfe0555544294f3681b3/rpds_py-0.22.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/49/97/fa78e3d2f65c02c8e1268b9aba606569fe97f6c8f7c2d74394553347c145/rsa-4.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/cb/a0/af448af28514e82f36e7431bc88e933ad043e5a95a7985bd9458a05877c6/rustworkx-0.15.1-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/50/1c/a4d3d8c20bf3bbafd8c5038e7da09043a9d21450b6a73694ada11c01b58a/setproctitle-1.3.4-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/06/bc/706838af28a542458bffe74a5d0772ca7f207b5495cd9fccfce61ef71f2a/smart_open-7.0.5-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5f/af/49dafbd64b9c013b24807fb61147361f52a171f570c9ae7973612323a059/sunray-0.10.0-py3-none-any.whl
@@ -577,6 +582,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/42/2a/ead1d09e57449b99dcc190d8d2323e3a167421d8f8fdf0f217c6f6befe47/rpds_py-0.22.3-cp310-cp310-macosx_10_12_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/49/97/fa78e3d2f65c02c8e1268b9aba606569fe97f6c8f7c2d74394553347c145/rsa-4.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/37/06/adeed1d166c55920a6a83085e8c8c8b24c8d7708de99f7a814458a3c4529/rustworkx-0.15.1-cp38-abi3-macosx_10_12_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/52/f4/95937eb5c5370324a942ba90174c6d0fc7c5ad2f7f8ea989ccdbd6e1be5e/setproctitle-1.3.4-cp310-cp310-macosx_10_9_universal2.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/06/bc/706838af28a542458bffe74a5d0772ca7f207b5495cd9fccfce61ef71f2a/smart_open-7.0.5-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5f/af/49dafbd64b9c013b24807fb61147361f52a171f570c9ae7973612323a059/sunray-0.10.0-py3-none-any.whl
@@ -673,6 +679,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/8f/7e/1254f406b7793b586c68e217a6a24ec79040f85e030fff7e9049069284f4/rpds_py-0.22.3-cp310-cp310-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/49/97/fa78e3d2f65c02c8e1268b9aba606569fe97f6c8f7c2d74394553347c145/rsa-4.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/03/11/95350c7eeade2e61a736f1ca956ee04acb920b7b080ff0c058c40cc7bbf3/rustworkx-0.15.1-cp38-abi3-macosx_11_0_arm64.whl
+      - pypi: https://files.pythonhosted.org/packages/32/a6/d49dbb0d75d02d11db49151469e1fee740efa45de7288bffcc4d88d0c290/setproctitle-1.3.4-cp310-cp310-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/06/bc/706838af28a542458bffe74a5d0772ca7f207b5495cd9fccfce61ef71f2a/smart_open-7.0.5-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5f/af/49dafbd64b9c013b24807fb61147361f52a171f570c9ae7973612323a059/sunray-0.10.0-py3-none-any.whl
@@ -763,6 +770,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/4e/80/8c8176b67ad7f4a894967a7a4014ba039626d96f1d4874d53e409b58d69f/rpds_py-0.22.3-cp310-cp310-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/49/97/fa78e3d2f65c02c8e1268b9aba606569fe97f6c8f7c2d74394553347c145/rsa-4.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/9c/c6/50f5736f5dac1709c6c8b6ac3470f466fd793dd25c081923942caf13051f/rustworkx-0.15.1-cp38-abi3-win_amd64.whl
+      - pypi: https://files.pythonhosted.org/packages/52/fd/1fae8c4c13af22d8d17816c44421085509a08dfa77f573d31447d6cd540c/setproctitle-1.3.4-cp310-cp310-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/06/bc/706838af28a542458bffe74a5d0772ca7f207b5495cd9fccfce61ef71f2a/smart_open-7.0.5-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5f/af/49dafbd64b9c013b24807fb61147361f52a171f570c9ae7973612323a059/sunray-0.10.0-py3-none-any.whl
@@ -871,6 +879,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e1/78/79c128c3e71abbc8e9739ac27af11dc0f91840a86fce67ff83c65d1ba195/rpds_py-0.22.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/49/97/fa78e3d2f65c02c8e1268b9aba606569fe97f6c8f7c2d74394553347c145/rsa-4.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/cb/a0/af448af28514e82f36e7431bc88e933ad043e5a95a7985bd9458a05877c6/rustworkx-0.15.1-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/44/bf/a447a51054ceed23f69d4f7370289044b4508569f11da6db2eec087bc174/setproctitle-1.3.4-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/06/bc/706838af28a542458bffe74a5d0772ca7f207b5495cd9fccfce61ef71f2a/smart_open-7.0.5-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5f/af/49dafbd64b9c013b24807fb61147361f52a171f570c9ae7973612323a059/sunray-0.10.0-py3-none-any.whl
@@ -965,6 +974,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/15/ad/8d1ddf78f2805a71253fcd388017e7b4a0615c22c762b6d35301fef20106/rpds_py-0.22.3-cp311-cp311-macosx_10_12_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/49/97/fa78e3d2f65c02c8e1268b9aba606569fe97f6c8f7c2d74394553347c145/rsa-4.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/37/06/adeed1d166c55920a6a83085e8c8c8b24c8d7708de99f7a814458a3c4529/rustworkx-0.15.1-cp38-abi3-macosx_10_12_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/5d/1a/1fb7d622195bcb3ce7b04366a833e51cfa5ad632c5dafe32e0763cd3fdc9/setproctitle-1.3.4-cp311-cp311-macosx_10_9_universal2.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/06/bc/706838af28a542458bffe74a5d0772ca7f207b5495cd9fccfce61ef71f2a/smart_open-7.0.5-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5f/af/49dafbd64b9c013b24807fb61147361f52a171f570c9ae7973612323a059/sunray-0.10.0-py3-none-any.whl
@@ -1059,6 +1069,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/c8/75/68c15732293a8485d79fe4ebe9045525502a067865fa4278f178851b2d87/rpds_py-0.22.3-cp311-cp311-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/49/97/fa78e3d2f65c02c8e1268b9aba606569fe97f6c8f7c2d74394553347c145/rsa-4.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/03/11/95350c7eeade2e61a736f1ca956ee04acb920b7b080ff0c058c40cc7bbf3/rustworkx-0.15.1-cp38-abi3-macosx_11_0_arm64.whl
+      - pypi: https://files.pythonhosted.org/packages/46/54/e3aa4f46eddf795f10452ea878ff85c3496d36409636530f9a37e2de3cbe/setproctitle-1.3.4-cp311-cp311-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/06/bc/706838af28a542458bffe74a5d0772ca7f207b5495cd9fccfce61ef71f2a/smart_open-7.0.5-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5f/af/49dafbd64b9c013b24807fb61147361f52a171f570c9ae7973612323a059/sunray-0.10.0-py3-none-any.whl
@@ -1147,6 +1158,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/b8/1b/c29b570bc5db8237553002788dc734d6bd71443a2ceac2a58202ec06ef12/rpds_py-0.22.3-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/49/97/fa78e3d2f65c02c8e1268b9aba606569fe97f6c8f7c2d74394553347c145/rsa-4.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/9c/c6/50f5736f5dac1709c6c8b6ac3470f466fd793dd25c081923942caf13051f/rustworkx-0.15.1-cp38-abi3-win_amd64.whl
+      - pypi: https://files.pythonhosted.org/packages/aa/19/240c4b99d57e045d3b2e2effa5924e810eabb18c56ef9c2336a7746dffe4/setproctitle-1.3.4-cp311-cp311-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/06/bc/706838af28a542458bffe74a5d0772ca7f207b5495cd9fccfce61ef71f2a/smart_open-7.0.5-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5f/af/49dafbd64b9c013b24807fb61147361f52a171f570c9ae7973612323a059/sunray-0.10.0-py3-none-any.whl
@@ -1254,6 +1266,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/82/a1/a45f3e30835b553379b3a56ea6c4eb622cf11e72008229af840e4596a8ea/rpds_py-0.22.3-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/49/97/fa78e3d2f65c02c8e1268b9aba606569fe97f6c8f7c2d74394553347c145/rsa-4.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/cb/a0/af448af28514e82f36e7431bc88e933ad043e5a95a7985bd9458a05877c6/rustworkx-0.15.1-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/4b/cf/4f19cdc7fdff3eaeb3064ce6eeb27c63081dba3123fbf904ac6bf0de440c/setproctitle-1.3.4-cp312-cp312-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/06/bc/706838af28a542458bffe74a5d0772ca7f207b5495cd9fccfce61ef71f2a/smart_open-7.0.5-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5f/af/49dafbd64b9c013b24807fb61147361f52a171f570c9ae7973612323a059/sunray-0.10.0-py3-none-any.whl
@@ -1348,6 +1361,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/75/47/3383ee3bd787a2a5e65a9b9edc37ccf8505c0a00170e3a5e6ea5fbcd97f7/rpds_py-0.22.3-cp312-cp312-macosx_10_12_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/49/97/fa78e3d2f65c02c8e1268b9aba606569fe97f6c8f7c2d74394553347c145/rsa-4.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/37/06/adeed1d166c55920a6a83085e8c8c8b24c8d7708de99f7a814458a3c4529/rustworkx-0.15.1-cp38-abi3-macosx_10_12_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/94/1f/02fb3c6038c819d86765316d2a911281fc56c7dd3a9355dceb3f26a5bf7b/setproctitle-1.3.4-cp312-cp312-macosx_10_13_universal2.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/06/bc/706838af28a542458bffe74a5d0772ca7f207b5495cd9fccfce61ef71f2a/smart_open-7.0.5-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5f/af/49dafbd64b9c013b24807fb61147361f52a171f570c9ae7973612323a059/sunray-0.10.0-py3-none-any.whl
@@ -1442,6 +1456,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/40/14/aa6400fa8158b90a5a250a77f2077c0d0cd8a76fce31d9f2b289f04c6dec/rpds_py-0.22.3-cp312-cp312-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/49/97/fa78e3d2f65c02c8e1268b9aba606569fe97f6c8f7c2d74394553347c145/rsa-4.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/03/11/95350c7eeade2e61a736f1ca956ee04acb920b7b080ff0c058c40cc7bbf3/rustworkx-0.15.1-cp38-abi3-macosx_11_0_arm64.whl
+      - pypi: https://files.pythonhosted.org/packages/b8/0c/d69e1f91c8f3d3aa74394e9e6ebb818f7d323e2d138ce1127e9462d09ebc/setproctitle-1.3.4-cp312-cp312-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/06/bc/706838af28a542458bffe74a5d0772ca7f207b5495cd9fccfce61ef71f2a/smart_open-7.0.5-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5f/af/49dafbd64b9c013b24807fb61147361f52a171f570c9ae7973612323a059/sunray-0.10.0-py3-none-any.whl
@@ -1530,6 +1545,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/f2/c7/f82b5be1e8456600395366f86104d1bd8d0faed3802ad511ef6d60c30d98/rpds_py-0.22.3-cp312-cp312-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/49/97/fa78e3d2f65c02c8e1268b9aba606569fe97f6c8f7c2d74394553347c145/rsa-4.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/9c/c6/50f5736f5dac1709c6c8b6ac3470f466fd793dd25c081923942caf13051f/rustworkx-0.15.1-cp38-abi3-win_amd64.whl
+      - pypi: https://files.pythonhosted.org/packages/44/5c/6e6665b5fd800206a9e537ab0d2630d7b9b31b4697d931ed468837cc9cf5/setproctitle-1.3.4-cp312-cp312-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/06/bc/706838af28a542458bffe74a5d0772ca7f207b5495cd9fccfce61ef71f2a/smart_open-7.0.5-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5f/af/49dafbd64b9c013b24807fb61147361f52a171f570c9ae7973612323a059/sunray-0.10.0-py3-none-any.whl
@@ -6798,7 +6814,7 @@ packages:
 - pypi: .
   name: ray-graph
   version: 0.1.0b0
-  sha256: 7254db6f85593711acba576490e0bd38b66e76efa59d8b0e7a657569a09b14ca
+  sha256: bfe368bfd46466bfc53db4970722bed947547033ab0f40543edfd56c9362dd09
   requires_dist:
   - ray[default]>=2.20
   - sunray>=0.10
@@ -6977,6 +6993,90 @@ packages:
   - pillow>=5.4 ; extra == 'all'
   - pillow>=5.4 ; extra == 'graphviz'
   - matplotlib>=3.0 ; extra == 'mpl'
+  requires_python: '>=3.8'
+- pypi: https://files.pythonhosted.org/packages/32/a6/d49dbb0d75d02d11db49151469e1fee740efa45de7288bffcc4d88d0c290/setproctitle-1.3.4-cp310-cp310-macosx_11_0_arm64.whl
+  name: setproctitle
+  version: 1.3.4
+  sha256: 754bac5e470adac7f7ec2239c485cd0b75f8197ca8a5b86ffb20eb3a3676cc42
+  requires_dist:
+  - pytest ; extra == 'test'
+  requires_python: '>=3.8'
+- pypi: https://files.pythonhosted.org/packages/44/5c/6e6665b5fd800206a9e537ab0d2630d7b9b31b4697d931ed468837cc9cf5/setproctitle-1.3.4-cp312-cp312-win_amd64.whl
+  name: setproctitle
+  version: 1.3.4
+  sha256: 9c76e43cb351ba8887371240b599925cdf3ecececc5dfb7125c71678e7722c55
+  requires_dist:
+  - pytest ; extra == 'test'
+  requires_python: '>=3.8'
+- pypi: https://files.pythonhosted.org/packages/44/bf/a447a51054ceed23f69d4f7370289044b4508569f11da6db2eec087bc174/setproctitle-1.3.4-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+  name: setproctitle
+  version: 1.3.4
+  sha256: 5d758e2eed2643afac5f2881542fbb5aa97640b54be20d0a5ed0691d02f0867d
+  requires_dist:
+  - pytest ; extra == 'test'
+  requires_python: '>=3.8'
+- pypi: https://files.pythonhosted.org/packages/46/54/e3aa4f46eddf795f10452ea878ff85c3496d36409636530f9a37e2de3cbe/setproctitle-1.3.4-cp311-cp311-macosx_11_0_arm64.whl
+  name: setproctitle
+  version: 1.3.4
+  sha256: 90ea8d302a5d30b948451d146e94674a3c5b020cc0ced9a1c28f8ddb0f203a5d
+  requires_dist:
+  - pytest ; extra == 'test'
+  requires_python: '>=3.8'
+- pypi: https://files.pythonhosted.org/packages/4b/cf/4f19cdc7fdff3eaeb3064ce6eeb27c63081dba3123fbf904ac6bf0de440c/setproctitle-1.3.4-cp312-cp312-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+  name: setproctitle
+  version: 1.3.4
+  sha256: f963b6ed8ba33eda374a98d979e8a0eaf21f891b6e334701693a2c9510613c4c
+  requires_dist:
+  - pytest ; extra == 'test'
+  requires_python: '>=3.8'
+- pypi: https://files.pythonhosted.org/packages/50/1c/a4d3d8c20bf3bbafd8c5038e7da09043a9d21450b6a73694ada11c01b58a/setproctitle-1.3.4-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+  name: setproctitle
+  version: 1.3.4
+  sha256: 06c16b7a91cdc5d700271899e4383384a61aae83a3d53d0e2e5a266376083342
+  requires_dist:
+  - pytest ; extra == 'test'
+  requires_python: '>=3.8'
+- pypi: https://files.pythonhosted.org/packages/52/f4/95937eb5c5370324a942ba90174c6d0fc7c5ad2f7f8ea989ccdbd6e1be5e/setproctitle-1.3.4-cp310-cp310-macosx_10_9_universal2.whl
+  name: setproctitle
+  version: 1.3.4
+  sha256: 0f6661a69c68349172ba7b4d5dd65fec2b0917abc99002425ad78c3e58cf7595
+  requires_dist:
+  - pytest ; extra == 'test'
+  requires_python: '>=3.8'
+- pypi: https://files.pythonhosted.org/packages/52/fd/1fae8c4c13af22d8d17816c44421085509a08dfa77f573d31447d6cd540c/setproctitle-1.3.4-cp310-cp310-win_amd64.whl
+  name: setproctitle
+  version: 1.3.4
+  sha256: 66821fada6426998762a3650a37fba77e814a249a95b1183011070744aff47f6
+  requires_dist:
+  - pytest ; extra == 'test'
+  requires_python: '>=3.8'
+- pypi: https://files.pythonhosted.org/packages/5d/1a/1fb7d622195bcb3ce7b04366a833e51cfa5ad632c5dafe32e0763cd3fdc9/setproctitle-1.3.4-cp311-cp311-macosx_10_9_universal2.whl
+  name: setproctitle
+  version: 1.3.4
+  sha256: f0f749f07002c2d6fecf37cedc43207a88e6c651926a470a5f229070cf791879
+  requires_dist:
+  - pytest ; extra == 'test'
+  requires_python: '>=3.8'
+- pypi: https://files.pythonhosted.org/packages/94/1f/02fb3c6038c819d86765316d2a911281fc56c7dd3a9355dceb3f26a5bf7b/setproctitle-1.3.4-cp312-cp312-macosx_10_13_universal2.whl
+  name: setproctitle
+  version: 1.3.4
+  sha256: d06990dcfcd41bb3543c18dd25c8476fbfe1f236757f42fef560f6aa03ac8dfc
+  requires_dist:
+  - pytest ; extra == 'test'
+  requires_python: '>=3.8'
+- pypi: https://files.pythonhosted.org/packages/aa/19/240c4b99d57e045d3b2e2effa5924e810eabb18c56ef9c2336a7746dffe4/setproctitle-1.3.4-cp311-cp311-win_amd64.whl
+  name: setproctitle
+  version: 1.3.4
+  sha256: 475986ddf6df65d619acd52188336a20f616589403f5a5ceb3fc70cdc137037a
+  requires_dist:
+  - pytest ; extra == 'test'
+  requires_python: '>=3.8'
+- pypi: https://files.pythonhosted.org/packages/b8/0c/d69e1f91c8f3d3aa74394e9e6ebb818f7d323e2d138ce1127e9462d09ebc/setproctitle-1.3.4-cp312-cp312-macosx_11_0_arm64.whl
+  name: setproctitle
+  version: 1.3.4
+  sha256: 317218c9d8b17a010ab2d2f0851e8ef584077a38b1ba2b7c55c9e44e79a61e73
+  requires_dist:
+  - pytest ; extra == 'test'
   requires_python: '>=3.8'
 - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
   name: six
