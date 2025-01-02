@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
+import sunray
+
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping
@@ -83,7 +85,43 @@ class _RayNodeMeta(type):
 class RayNode(metaclass=_RayNodeMeta):
     """The base class for all RayGraph nodes."""
 
-    _event_handlers: Mapping[Event, _EventHandler]
+    _event_handlers: Mapping[type[Event], _EventHandler[Event]]
 
     def remote_init(self, context: RayNodeContext) -> None:
         """Initialize the node in ray cluster."""
+
+
+class RayNodeActor(sunray.ActorMixin):
+    """The actor class for RayGraph nodes."""
+
+    def __init__(self, ray_node: RayNode) -> None:
+        self.ray_node = ray_node
+
+    @sunray.remote_method
+    def handle(self, event: Event) -> None:
+        """Handle the given event."""
+        event_type = type(event)
+        event_handler = self.ray_node._event_handlers.get(event_type)
+        if event_handler:
+            event_handler.handler_func(self.ray_node, event)  # type: ignore
+        else:
+            raise ValueError(f"no handler for event {event_type}")
+
+
+class RayNodeRef:
+    """The reference to a RayGraph node."""
+
+    def __init__(self, name: str, actor: sunray.Actor[RayNodeActor]):
+        self._name = name
+        self._actor = actor
+
+    @property
+    def name(self) -> str:
+        """The name of the node."""
+        return self._name
+
+    def send(self, event: Event, **extra_ray_opts) -> sunray.ObjectRef[None]:
+        """Send an event to the node."""
+        return self._actor.methods.handle.options(
+            name=f"{self.name}.handle[{type(event).__name__}]", **extra_ray_opts
+        ).remote(event)
