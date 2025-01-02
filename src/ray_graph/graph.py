@@ -11,6 +11,8 @@ if TYPE_CHECKING:
 
     from ray_graph.event import Event
 
+_node_context = None
+
 
 @dataclass(frozen=True)
 class RayNodeContext:
@@ -82,12 +84,32 @@ class _RayNodeMeta(type):
         return super().__new__(cls, name, bases, attrs)
 
 
+def get_node_context() -> RayNodeContext:
+    """Get the context of the current RayGraph node."""
+    global _node_context
+    if _node_context is None:
+        ctx = sunray.get_runtime_context()
+        _node_context = RayNodeContext(
+            name=ctx.get_actor_name() or "",
+            namespace=ctx.namespace,
+            job_id=ctx.get_job_id(),
+            task_id=ctx.get_task_id() or "",
+            actor_id=ctx.get_actor_id() or "",
+            worker_id=ctx.get_worker_id(),
+            node_id=ctx.get_node_id(),
+            placement_group_id=ctx.get_placement_group_id(),
+            accelerator_ids=ctx.get_accelerator_ids(),
+            assigned_resources=ctx.get_assigned_resources(),
+        )
+    return _node_context
+
+
 class RayNode(metaclass=_RayNodeMeta):
     """The base class for all RayGraph nodes."""
 
     _event_handlers: Mapping[type[Event], _EventHandler[Event]]
 
-    def remote_init(self, context: RayNodeContext) -> None:
+    def remote_init(self) -> None:
         """Initialize the node in ray cluster."""
 
 
