@@ -9,6 +9,8 @@ import sunray
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping
 
+    from sunray._internal.core import RuntimeContext
+
     from ray_graph.event import Event, _RspT
 
 _node_context = None
@@ -18,35 +20,7 @@ _node_context = None
 class RayNodeContext:
     """The context of a RayGraph node."""
 
-    name: str
-    """The name of the node."""
-
-    namespace: str
-    """The namespace of the node."""
-
-    job_id: str
-    """The job id of the node."""
-
-    task_id: str
-    """The task id of the node."""
-
-    actor_id: str
-    """The actor id of the node."""
-
-    worker_id: str
-    """The worker id of the node."""
-
-    node_id: str
-    """The id of the node."""
-
-    placement_group_id: str | None
-    """The placement group id of the node."""
-
-    accelerator_ids: Mapping[str, list[str]]
-    """The current node's visible accelerator ids."""
-
-    assigned_resources: Mapping[str, float]
-    """The current node's assigned resources."""
+    runtime_context: RuntimeContext
 
 
 _EventT = TypeVar("_EventT", bound="Event")
@@ -88,19 +62,7 @@ def get_node_context() -> RayNodeContext:  # pragma: no cover
     """Get the context of the current RayGraph node."""
     global _node_context
     if _node_context is None:
-        ctx = sunray.get_runtime_context()
-        _node_context = RayNodeContext(
-            name=ctx.get_actor_name() or "",
-            namespace=ctx.namespace,
-            job_id=ctx.get_job_id(),
-            task_id=ctx.get_task_id() or "",
-            actor_id=ctx.get_actor_id() or "",
-            worker_id=ctx.get_worker_id(),
-            node_id=ctx.get_node_id(),
-            placement_group_id=ctx.get_placement_group_id(),
-            accelerator_ids=ctx.get_accelerator_ids(),
-            assigned_resources=ctx.get_assigned_resources(),
-        )
+        _node_context = RayNodeContext(runtime_context=sunray.get_runtime_context())
     return _node_context
 
 
