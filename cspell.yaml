@@ -1,15 +1,12 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/streetsidesoftware/cspell/refs/heads/main/cspell.schema.json
-
 version: "0.2"
 language: en
 ignorePaths:
   - .gitignore
   - cspell.yaml
-
 dictionaries:
   - python
-
 words:
+  - getproctitle
   - pyupgrade
   - sunray
   - taplo
