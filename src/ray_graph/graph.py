@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic
 
 import sunray
+
+from typing_extensions import TypeVar
 
 
 if TYPE_CHECKING:
@@ -11,7 +13,7 @@ if TYPE_CHECKING:
 
     from sunray._internal.core import RuntimeContext
 
-    from ray_graph.event import Event, _RspT
+    from ray_graph.event import Event, _Rsp_co
 
 _node_context = None
 
@@ -23,20 +25,23 @@ class RayNodeContext:
     runtime_context: RuntimeContext
 
 
-_EventT = TypeVar("_EventT", bound="Event")
-_RayNode_co = TypeVar("_RayNode_co", bound="RayNode", covariant=True)
+_Event_co = TypeVar("_Event_co", bound="Event", covariant=True)
+_RayNode_co = TypeVar("_RayNode_co", bound="RayNode", covariant=True, default="RayNode")
 
 
-class _EventHandler(Generic[_EventT]):
-    def __init__(self, event_t: type[_EventT]) -> None:
+class _EventHandler(Generic[_Event_co]):
+    def __init__(self, event_t: type[_Event_co]) -> None:
         self.event_t = event_t
 
-    def __call__(self, handler_func: Callable[[_RayNode_co, _EventT], Any]) -> Any:
+    def __call__(
+        self: _EventHandler[Event[_Rsp_co]],
+        handler_func: Callable[[_RayNode_co, _Event_co], _Rsp_co],
+    ) -> Any:
         self.handler_func = handler_func
         return self
 
 
-def handle(event_t: type[_EventT]) -> _EventHandler[_EventT]:
+def handle(event_t: type[_Event_co]) -> _EventHandler[_Event_co]:
     """Decorator to register an event handler."""
     return _EventHandler(event_t)
 
@@ -87,7 +92,7 @@ class RayNodeActor(sunray.ActorMixin):
         self.ray_node.remote_init()
 
     @sunray.remote_method
-    def handle(self, event: Event[_RspT]) -> _RspT:
+    def handle(self, event: Event[_Rsp_co]) -> _Rsp_co:
         """Handle the given event."""
         event_type = type(event)
         event_handler = self.ray_node._event_handlers.get(event_type)
@@ -109,7 +114,7 @@ class RayNodeRef:
         """The name of the node."""
         return self._name
 
-    def send(self, event: Event[_RspT], **extra_ray_opts) -> sunray.ObjectRef[_RspT]:
+    def send(self, event: Event[_Rsp_co], **extra_ray_opts) -> sunray.ObjectRef[_Rsp_co]:
         """Send an event to the node."""
         return self._actor.methods.handle.options(
             name=f"{self.name}.handle[{type(event).__name__}]", **extra_ray_opts

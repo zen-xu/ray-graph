@@ -80,10 +80,10 @@ class _EventMeta(type):
         return dc.dataclass(kw_only=True, frozen=True)(super().__new__(cls, name, bases, dct))
 
 
-_RspT = TypeVar("_RspT", default=Any)
+_Rsp_co = TypeVar("_Rsp_co", default=Any, covariant=True)
 
 
-class Event(Generic[_RspT], metaclass=_EventMeta):
+class Event(Generic[_Rsp_co], metaclass=_EventMeta):
     """The base event.
 
     Each actor communicates by passing Events.
