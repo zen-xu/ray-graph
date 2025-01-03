@@ -34,10 +34,10 @@ jobs:
           pixi run -e ${{ matrix.python-version }} test
           --cov
           --cov-report=term
-          --cov-report=xml:coverage.${{ matrix.python-version }}.xml
-      - uses: codecov/codecov-action@v4
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          --cov-report=xml:coverage.${{ runner.os }}-${{ matrix.python-version }}.xml
+      - uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
       - name: Check for clean working tree
         run: |
           git diff --exit-code --stat HEAD
