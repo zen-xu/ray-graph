@@ -9,7 +9,7 @@ import sunray
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping
 
-    from ray_graph.event import Event
+    from ray_graph.event import Event, _RspT
 
 _node_context = None
 
@@ -57,7 +57,7 @@ class _EventHandler(Generic[_EventT]):
     def __init__(self, event_t: type[_EventT]) -> None:
         self.event_t = event_t
 
-    def __call__(self, handler_func: Callable[[_RayNode_co, _EventT], None]) -> Any:
+    def __call__(self, handler_func: Callable[[_RayNode_co, _EventT], Any]) -> Any:
         self.handler_func = handler_func
         return self
 
@@ -125,14 +125,14 @@ class RayNodeActor(sunray.ActorMixin):
         self.ray_node.remote_init()
 
     @sunray.remote_method
-    def handle(self, event: Event) -> None:
+    def handle(self, event: Event[_RspT]) -> _RspT:
         """Handle the given event."""
         event_type = type(event)
         event_handler = self.ray_node._event_handlers.get(event_type)
         if event_handler:
-            event_handler.handler_func(self.ray_node, event)  # type: ignore
-        else:
-            raise ValueError(f"no handler for event {event_type}")
+            return event_handler.handler_func(self.ray_node, event)  # type: ignore
+
+        raise ValueError(f"no handler for event {event_type}")
 
 
 class RayNodeRef:
@@ -147,7 +147,7 @@ class RayNodeRef:
         """The name of the node."""
         return self._name
 
-    def send(self, event: Event, **extra_ray_opts) -> sunray.ObjectRef[None]:
+    def send(self, event: Event[_RspT], **extra_ray_opts) -> sunray.ObjectRef[_RspT]:
         """Send an event to the node."""
         return self._actor.methods.handle.options(
             name=f"{self.name}.handle[{type(event).__name__}]", **extra_ray_opts
