@@ -53,9 +53,11 @@ class _RayNodeMeta(type):
         for _, attr_value in attrs.items():
             if isinstance(attr_value, _EventHandler):
                 if attr_value.event_t in event_handlers:
+                    mod = attrs["__module__"]
+                    qual = attrs["__qualname__"]
+                    event_t = attr_value.event_t
                     raise ValueError(
-                        f"<class '{attrs["__module__"]}.{attrs["__qualname__"]}'> "
-                        f"got duplicate event handler for {attr_value.event_t}"
+                        f"<class '{mod}.{qual}'> got duplicate event handler for {event_t}"
                     )
                 event_handlers[attr_value.event_t] = attr_value
         # remove event handler functions from attrs
