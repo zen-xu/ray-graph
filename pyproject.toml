@@ -17,8 +17,9 @@ requires-python = ">=3.10,<3.13"
 
 dependencies = [
   "ray[default]>=2.20",
-  "sunray>=0.9",
-  "typing-extensions; python_version<'3.11'",
+  "sunray>=0.10",
+  "typing-extensions",
+  "rustworkx>=0.15",
 ]
 
 [project.urls]
@@ -46,6 +47,7 @@ hatchling       = "*"
 mypy            = "*"
 pytest          = ">=8,<9"
 pytest-coverage = "*"
+setproctitle    = "*"
 
 [tool.pixi.tasks]
 lint = "pre-commit run -a"
@@ -99,6 +101,7 @@ select = [
 ignore = [
   "D100", # undocumented-public-module
   "D104", # undocumented-public-package
+  "D107", # undocumented-public-init
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -167,3 +170,7 @@ exclude_also = [
 ]
 show_missing = true
 skip_covered = true
+
+# -------------------------------- Pytest --------------------------------
+[tool.pytest.ini_options]
+filterwarnings = ["ignore:.*local mode.*:DeprecationWarning"]

@@ -2,19 +2,15 @@ from __future__ import annotations
 
 import dataclasses as dc
 import datetime as dt
-import sys
 
-from typing import TYPE_CHECKING, Any, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Generic, overload
+
+from typing_extensions import Self, TypeVar, dataclass_transform
 
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-
-if sys.version_info < (3, 11):
-    from typing_extensions import Self, dataclass_transform
-else:
-    from typing import Self, dataclass_transform
 
 _T = TypeVar("_T")
 
@@ -84,7 +80,10 @@ class _EventMeta(type):
         return dc.dataclass(kw_only=True, frozen=True)(super().__new__(cls, name, bases, dct))
 
 
-class Event(metaclass=_EventMeta):
+_Rsp_co = TypeVar("_Rsp_co", default=Any, covariant=True)
+
+
+class Event(Generic[_Rsp_co], metaclass=_EventMeta):
     """The base event.
 
     Each actor communicates by passing Events.
