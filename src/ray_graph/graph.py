@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import cached_property
 from typing import TYPE_CHECKING, Any, Generic
 
 import sunray
@@ -107,9 +108,12 @@ class RayNodeActor(sunray.ActorMixin):
 class RayNodeRef:
     """The reference to a RayGraph node."""
 
-    def __init__(self, name: str, actor: sunray.Actor[RayNodeActor]):
+    def __init__(self, name: str):
         self._name = name
-        self._actor = actor
+
+    @cached_property
+    def _actor(self) -> sunray.Actor[RayNodeActor]:
+        return sunray.get_actor[RayNodeActor](self.name)
 
     @property
     def name(self) -> str:
