@@ -67,9 +67,9 @@ def test_ray_node_ref(init_ray):
 
             return setproctitle.getproctitle()
 
-    node_actor = RayNodeActor.new_actor().remote(CustomNode())
     name = "test_ray_node_ref"
-    node_ref = RayNodeRef(name, node_actor)
+    node_actor = RayNodeActor.new_actor().options(name=name).remote(CustomNode())
+    node_ref = RayNodeRef(name)
     assert node_ref.name == name
     assert sunray.get(node_ref.send(GetProcName())) == f"ray::{name}.handle[GetProcName]"
     sunray.kill(node_actor)
