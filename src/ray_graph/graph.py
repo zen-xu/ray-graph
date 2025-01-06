@@ -11,12 +11,15 @@ from typing_extensions import TypedDict, TypeVar
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping
+    from typing import TypeAlias
 
     from sunray._internal.core import RuntimeContext
 
     from ray_graph.event import Event, _Rsp_co
 
 _node_context = None
+
+NodeName: TypeAlias = str
 
 
 @dataclass(frozen=True)
@@ -134,7 +137,7 @@ class RayNodeRef:
         return sunray.get_actor[RayNodeActor](self.name)
 
     @property
-    def name(self) -> str:
+    def name(self) -> NodeName:
         """The name of the node."""
         return self._name
 
