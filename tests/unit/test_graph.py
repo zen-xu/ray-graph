@@ -1,13 +1,14 @@
 # ruff: noqa: ARG001
 from __future__ import annotations
 
+from textwrap import dedent
 from typing import Any
 
 import pytest
 import sunray
 
 from ray_graph.event import Event
-from ray_graph.graph import RayNode, RayNodeActor, RayNodeRef, handle
+from ray_graph.graph import RayGraph, RayNode, RayNodeActor, RayNodeRef, handle
 
 
 class CustomEvent(Event[int]):
@@ -75,3 +76,34 @@ def test_ray_node_ref(init_ray):
     assert node_ref.labels == labels
     assert sunray.get(node_ref.send(GetProcName())) == f"ray::{name}.handle[GetProcName]"
     sunray.kill(node_actor)
+
+
+class TestRayGraph:
+    def test_set_relationships(self):
+        class CustomNode(RayNode):
+            def remote_init(self) -> None: ...
+
+        total_nodes = {
+            "node1": CustomNode(),
+            "node2": CustomNode(),
+            "node3": CustomNode(),
+        }
+        builder = RayGraph(total_nodes)
+        builder.set_parent("node2", "node1")
+        builder.set_parent("node2", "node1")  # add duplicate edge
+        builder.set_children("node2", ["node3"])
+
+        got = builder._dag.to_dot(node_attr=lambda n: {"label": n[0]})
+        got = got and got.strip()
+        expect = dedent(
+            """
+            digraph {
+            0 [label="node1"];
+            1 [label="node2"];
+            2 [label="node3"];
+            0 -> 1 ;
+            1 -> 2 ;
+            }
+            """
+        ).strip()
+        assert got == expect

@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, Generic
 
+import rustworkx as rwx
 import sunray
 
 from typing_extensions import TypedDict, TypeVar
@@ -151,3 +152,26 @@ class RayNodeRef:
         return self._actor.methods.handle.options(
             name=f"{self.name}.handle[{type(event).__name__}]", **extra_ray_opts
         ).remote(event)
+
+
+class RayGraph:
+    """The graph of ray nodes."""
+
+    def __init__(self, total_nodes: Mapping[NodeName, RayNode]):
+        self._dag = rwx.PyDAG(check_cycle=True)
+        self._node_name_ids = {
+            node_name: self._dag.add_node((node_name, node))
+            for node_name, node in total_nodes.items()
+        }
+
+    def set_parent(self, child: NodeName, parent: NodeName) -> None:
+        """Set the parent of the child node."""
+        child_id = self._node_name_ids[child]
+        parent_id = self._node_name_ids[parent]
+        if not self._dag.has_edge(parent_id, child_id):
+            self._dag.add_edge(parent_id, child_id, None)
+
+    def set_children(self, parent: NodeName, children: list[NodeName]) -> None:
+        """Set the children of the parent node."""
+        for child in children:
+            self.set_parent(child, parent)
