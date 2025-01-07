@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Generic
 
 import sunray
 
-from typing_extensions import TypeVar
+from typing_extensions import TypedDict, TypeVar
 
 
 if TYPE_CHECKING:
@@ -74,17 +74,30 @@ def get_node_context() -> RayNodeContext:  # pragma: no cover
     return _node_context
 
 
-class RayNode(metaclass=_RayNodeMeta):
+class RayResources(TypedDict, total=False):
+    """The ray actor resources."""
+
+    num_cpus: float
+    num_gpus: float
+    memory: float
+    custom_resources: Mapping[str, float]
+
+
+class RayNode(metaclass=_RayNodeMeta):  # pragma: no cover
     """The base class for all RayGraph nodes."""
 
     _event_handlers: Mapping[type[Event], _EventHandler[Event]]
 
-    def remote_init(self) -> None:  # pragma: no cover
+    def remote_init(self) -> None:
         """Initialize the node in ray cluster."""
 
-    def labels(self) -> Mapping[str, str]:  # pragma: no cover
+    def labels(self) -> Mapping[str, str]:
         """The labels of the node, which will inject into its node reference."""
         return {}
+
+    def resources(self) -> RayResources:
+        """Declare the ray actor resources."""
+        return {"num_cpus": 1}
 
 
 class RayNodeActor(sunray.ActorMixin):

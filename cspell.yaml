@@ -6,6 +6,7 @@ ignorePaths:
 dictionaries:
   - python
 words:
+  - cpus
   - getproctitle
   - pyupgrade
   - sunray
