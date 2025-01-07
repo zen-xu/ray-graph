@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 NodeName: TypeAlias = str
 
 _node_context = None
-_graph: RayGraph | None = None
+_graph: RayGraphRef | None = None
 _node_name: NodeName | None = None
 
 
@@ -32,7 +32,7 @@ class RayNodeContext:
     runtime_context: RuntimeContext
     "ray runtime context"
 
-    graph: RayGraph
+    graph: RayGraphRef
     "ray node graph"
 
     node_name: NodeName
@@ -123,7 +123,7 @@ class RayNode(metaclass=_RayNodeMeta):  # pragma: no cover
 class RayNodeActor(sunray.ActorMixin):
     """The actor class for RayGraph nodes."""
 
-    def __init__(self, name: str, ray_node: RayNode, ray_graph: RayGraph) -> None:
+    def __init__(self, name: str, ray_node: RayNode, ray_graph: RayGraphRef) -> None:
         self.name = name
         self.ray_node = ray_node
         self.ray_graph = ray_graph
@@ -200,8 +200,8 @@ class RayGraphBuilder:
             self.set_parent(child, parent)
 
 
-class RayGraph:
-    """The graph of ray nodes."""
+class RayGraphRef:
+    """The graph reference of ray nodes."""
 
     def __init__(self, dag: rwx.PyDAG[RayNodeRef, None]):
         self._dag = dag
