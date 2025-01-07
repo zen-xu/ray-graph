@@ -82,6 +82,10 @@ class RayNode(metaclass=_RayNodeMeta):
     def remote_init(self) -> None:  # pragma: no cover
         """Initialize the node in ray cluster."""
 
+    def labels(self) -> Mapping[str, str]:  # pragma: no cover
+        """The labels of the node, which will inject into its node reference."""
+        return {}
+
 
 class RayNodeActor(sunray.ActorMixin):
     """The actor class for RayGraph nodes."""
@@ -108,8 +112,9 @@ class RayNodeActor(sunray.ActorMixin):
 class RayNodeRef:
     """The reference to a RayGraph node."""
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, labels: Mapping[str, str] | None = None):
         self._name = name
+        self._labels = labels or {}
 
     @cached_property
     def _actor(self) -> sunray.Actor[RayNodeActor]:
@@ -119,6 +124,11 @@ class RayNodeRef:
     def name(self) -> str:
         """The name of the node."""
         return self._name
+
+    @property
+    def labels(self) -> Mapping[str, str]:
+        """The labels of the node."""
+        return self._labels
 
     def send(self, event: Event[_Rsp_co], **extra_ray_opts) -> sunray.ObjectRef[_Rsp_co]:
         """Send an event to the node."""
