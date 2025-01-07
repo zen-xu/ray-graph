@@ -175,3 +175,57 @@ class RayGraph:
         """Set the children of the parent node."""
         for child in children:
             self.set_parent(child, parent)
+
+
+class RayGraphRef:
+    """The reference to a RayGraph."""
+
+    def __init__(self, dag: rwx.PyDAG[RayNodeRef, None]):
+        self._dag = dag
+        self._node_ids: Mapping[NodeName, int] = {
+            node_ref.name: node_id for node_id, node_ref in enumerate(self._dag.nodes())
+        }
+
+    def get(self, node: NodeName) -> RayNodeRef:
+        """Get the node reference of the given name."""
+        return self._dag.get_node_data(self._node_ids[node])
+
+    def filter(self, predicate: Callable[[RayNodeRef], bool]) -> list[RayNodeRef]:
+        """Filter the nodes by the given predicate."""
+        return [node for node in self._dag.nodes() if predicate(node)]
+
+    def get_parents(self, child: NodeName) -> list[RayNodeRef]:
+        """Get the parent node references of the child node."""
+        child_id = self._node_ids[child]
+        return self._dag.predecessors(child_id)
+
+    def get_children(self, parent: NodeName) -> list[RayNodeRef]:
+        """Get the children node references of the parent node."""
+        parent_id = self._node_ids[parent]
+        return self._dag.successors(parent_id)
+
+    def get_roots(self, node: NodeName) -> list[RayNodeRef]:
+        """Get the root node references of the graph."""
+        return [
+            self._dag.get_node_data(ancestor_id)
+            for ancestor_id in rwx.ancestors(self._dag, self._node_ids[node])
+            if not rwx.ancestors(self._dag, ancestor_id)
+        ]
+
+    def get_leaves(self, node: NodeName) -> list[RayNodeRef]:
+        """Get the leaf node references of current node."""
+        return [
+            self._dag.get_node_data(ancestor_id)
+            for ancestor_id in rwx.descendants(self._dag, self._node_ids[node])
+            if not rwx.descendants(self._dag, ancestor_id)
+        ]
+
+    def get_siblings(self, node: NodeName) -> list[RayNodeRef]:
+        """Get the sibling node references of the current node."""
+        parent_node_names = [node.name for node in self.get_parents(node)]
+        return [
+            sibling
+            for parent_node_name in parent_node_names
+            for sibling in self.get_children(parent_node_name)
+            if sibling.name != node
+        ]
