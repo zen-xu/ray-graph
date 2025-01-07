@@ -178,8 +178,8 @@ class RayGraphBuilder:
             self.set_parent(child, parent)
 
 
-class RayGraphRef:
-    """The reference to a RayGraph."""
+class RayGraph:
+    """The graph of ray nodes."""
 
     def __init__(self, dag: rwx.PyDAG[RayNodeRef, None]):
         self._dag = dag

@@ -9,7 +9,7 @@ import rustworkx as rwx
 import sunray
 
 from ray_graph.event import Event
-from ray_graph.graph import RayGraphBuilder, RayGraphRef, RayNode, RayNodeActor, RayNodeRef, handle
+from ray_graph.graph import RayGraph, RayGraphBuilder, RayNode, RayNodeActor, RayNodeRef, handle
 
 
 class CustomEvent(Event[int]):
@@ -110,9 +110,9 @@ class TestRayGraphBuilder:
         assert got == expect
 
 
-class TestRayGraphRef:
+class TestRayGraph:
     @pytest.fixture
-    def graph_ref(self) -> RayGraphRef:
+    def graph(self) -> RayGraph:
         """
            root1  root2
              │     │
@@ -141,10 +141,10 @@ class TestRayGraphRef:
         dag.add_edges_from_no_data(
             [(root1, node1), (root2, node1), (root1, node2), (node1, leaf1), (node1, leaf2)]
         )
-        return RayGraphRef(dag)
+        return RayGraph(dag)
 
-    def test_get(self, graph_ref: RayGraphRef):
-        assert graph_ref.get("node1").name == "node1"
+    def test_get(self, graph: RayGraph):
+        assert graph.get("node1").name == "node1"
 
     @pytest.mark.parametrize(
         ("node_name", "expect"),
@@ -155,8 +155,8 @@ class TestRayGraphRef:
             ("root1", []),
         ],
     )
-    def test_get_parents(self, graph_ref: RayGraphRef, node_name, expect):
-        assert sorted(node.name for node in graph_ref.get_parents(node_name)) == expect
+    def test_get_parents(self, graph: RayGraph, node_name, expect):
+        assert sorted(node.name for node in graph.get_parents(node_name)) == expect
 
     @pytest.mark.parametrize(
         ("node_name", "expect"),
@@ -167,8 +167,8 @@ class TestRayGraphRef:
             ("root1", ["node1", "node2"]),
         ],
     )
-    def test_get_children(self, graph_ref: RayGraphRef, node_name, expect):
-        assert sorted(node.name for node in graph_ref.get_children(node_name)) == expect
+    def test_get_children(self, graph: RayGraph, node_name, expect):
+        assert sorted(node.name for node in graph.get_children(node_name)) == expect
 
     @pytest.mark.parametrize(
         ("node_name", "expect"),
@@ -179,8 +179,8 @@ class TestRayGraphRef:
             ("root1", []),
         ],
     )
-    def test_get_roots(self, graph_ref: RayGraphRef, node_name, expect):
-        assert sorted(node.name for node in graph_ref.get_roots(node_name)) == expect
+    def test_get_roots(self, graph: RayGraph, node_name, expect):
+        assert sorted(node.name for node in graph.get_roots(node_name)) == expect
 
     @pytest.mark.parametrize(
         ("node_name", "expect"),
@@ -191,8 +191,8 @@ class TestRayGraphRef:
             ("leaf1", []),
         ],
     )
-    def test_get_leaves(self, graph_ref: RayGraphRef, node_name, expect):
-        assert sorted(node.name for node in graph_ref.get_leaves(node_name)) == expect
+    def test_get_leaves(self, graph: RayGraph, node_name, expect):
+        assert sorted(node.name for node in graph.get_leaves(node_name)) == expect
 
     @pytest.mark.parametrize(
         ("node_name", "expect"),
@@ -202,8 +202,8 @@ class TestRayGraphRef:
             ("leaf1", ["leaf2"]),
         ],
     )
-    def test_get_siblings(self, graph_ref: RayGraphRef, node_name, expect):
-        assert sorted(node.name for node in graph_ref.get_siblings(node_name)) == expect
+    def test_get_siblings(self, graph: RayGraph, node_name, expect):
+        assert sorted(node.name for node in graph.get_siblings(node_name)) == expect
 
     @pytest.mark.parametrize(
         ("predicate", "expect"),
@@ -214,5 +214,5 @@ class TestRayGraphRef:
             (lambda node_ref: node_ref.labels["kind"] == "leaf", ["leaf1", "leaf2"]),
         ],
     )
-    def test_filter(self, graph_ref: RayGraphRef, predicate, expect):
-        assert sorted(node.name for node in graph_ref.filter(predicate)) == expect
+    def test_filter(self, graph: RayGraph, predicate, expect):
+        assert sorted(node.name for node in graph.filter(predicate)) == expect
