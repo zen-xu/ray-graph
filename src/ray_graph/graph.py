@@ -22,7 +22,6 @@ NodeName: TypeAlias = str
 
 _node_context = None
 _graph: RayGraphRef | None = None
-_node_name: NodeName | None = None
 
 
 @dataclass(frozen=True)
@@ -85,11 +84,11 @@ def get_node_context() -> RayNodeContext:  # pragma: no cover
 
     if graph._node_context is None:
         assert graph._graph is not None
-        assert graph._node_name is not None
+        runtime_context = sunray.get_runtime_context()
         graph._node_context = RayNodeContext(
-            runtime_context=sunray.get_runtime_context(),
+            runtime_context=runtime_context,
             graph=graph._graph,
-            node_name=graph._node_name,
+            node_name=runtime_context.get_actor_name() or "",
         )
     return graph._node_context
 
@@ -130,7 +129,9 @@ class RayNodeActor(sunray.ActorMixin):
         from ray_graph import graph
 
         graph._graph = ray_graph
-        graph._node_name = name
+
+    def __repr__(self) -> str:  # noqa: D105
+        return f"{self.ray_node.__class__.__name__}({self.name})"
 
     @sunray.remote_method
     def remote_init(self) -> None:
