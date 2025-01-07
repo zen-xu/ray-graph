@@ -154,8 +154,8 @@ class RayNodeRef:
         ).remote(event)
 
 
-class RayGraph:
-    """The graph of ray nodes."""
+class RayGraphBuilder:
+    """The graph builder of ray nodes."""
 
     def __init__(self, total_nodes: Mapping[NodeName, RayNode]):
         self._dag = rwx.PyDAG(check_cycle=True)

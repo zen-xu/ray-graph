@@ -9,7 +9,7 @@ import rustworkx as rwx
 import sunray
 
 from ray_graph.event import Event
-from ray_graph.graph import RayGraph, RayGraphRef, RayNode, RayNodeActor, RayNodeRef, handle
+from ray_graph.graph import RayGraphBuilder, RayGraphRef, RayNode, RayNodeActor, RayNodeRef, handle
 
 
 class CustomEvent(Event[int]):
@@ -79,7 +79,7 @@ def test_ray_node_ref(init_ray):
     sunray.kill(node_actor)
 
 
-class TestRayGraph:
+class TestRayGraphBuilder:
     def test_set_relationships(self):
         class CustomNode(RayNode):
             def remote_init(self) -> None: ...
@@ -89,7 +89,7 @@ class TestRayGraph:
             "node2": CustomNode(),
             "node3": CustomNode(),
         }
-        builder = RayGraph(total_nodes)
+        builder = RayGraphBuilder(total_nodes)
         builder.set_parent("node2", "node1")
         builder.set_parent("node2", "node1")  # add duplicate edge
         builder.set_children("node2", ["node3"])
