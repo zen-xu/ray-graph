@@ -107,8 +107,9 @@ class RayNode(metaclass=_RayNodeMeta):  # pragma: no cover
 class RayNodeActor(sunray.ActorMixin):
     """The actor class for RayGraph nodes."""
 
-    def __init__(self, ray_node: RayNode) -> None:
+    def __init__(self, ray_node: RayNode, ray_graph: RayGraph) -> None:
         self.ray_node = ray_node
+        self.ray_graph = ray_graph
 
     @sunray.remote_method
     def remote_init(self) -> None:

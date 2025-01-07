@@ -16,6 +16,12 @@ class CustomEvent(Event[int]):
     value: int
 
 
+@pytest.fixture
+def dummy_graph() -> RayGraph:
+    dag = rwx.PyDAG()
+    return RayGraph(dag)
+
+
 def test_register_event_handler():
     class CustomNode(RayNode):
         @handle(CustomEvent)
@@ -37,7 +43,7 @@ def test_register_duplicate_event_handler():
             def handle_custom_event2(self, event: CustomEvent) -> Any: ...
 
 
-def test_ray_node_actor_handle_event(init_local_ray):
+def test_ray_node_actor_handle_event(init_local_ray, dummy_graph):
     class CustomNode(RayNode):
         def remote_init(self) -> None:
             self.value = 1
@@ -48,7 +54,7 @@ def test_ray_node_actor_handle_event(init_local_ray):
 
             return self.value
 
-    node_actor = RayNodeActor.new_actor().remote(CustomNode())
+    node_actor = RayNodeActor.new_actor().remote(CustomNode(), dummy_graph)
     sunray.get(node_actor.methods.remote_init.remote())
     assert sunray.get(node_actor.methods.handle.remote(CustomEvent(value=2))) == 3
 
@@ -59,7 +65,7 @@ def test_ray_node_actor_handle_event(init_local_ray):
     sunray.kill(node_actor)
 
 
-def test_ray_node_ref(init_ray):
+def test_ray_node_ref(init_ray, dummy_graph):
     class GetProcName(Event[str]): ...
 
     class CustomNode(RayNode):
@@ -70,7 +76,7 @@ def test_ray_node_ref(init_ray):
             return setproctitle.getproctitle()
 
     name = "test_ray_node_ref"
-    node_actor = RayNodeActor.new_actor().options(name=name).remote(CustomNode())
+    node_actor = RayNodeActor.new_actor().options(name=name).remote(CustomNode(), dummy_graph)
     labels = {"node": "mac"}
     node_ref = RayNodeRef(name, labels)
     assert node_ref.name == name
