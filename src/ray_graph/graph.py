@@ -18,9 +18,10 @@ if TYPE_CHECKING:
 
     from ray_graph.event import Event, _Rsp_co
 
-_node_context = None
-
 NodeName: TypeAlias = str
+
+_node_context = None
+_graph: RayGraph | None = None
 
 
 @dataclass(frozen=True)
@@ -28,6 +29,13 @@ class RayNodeContext:
     """The context of a RayGraph node."""
 
     runtime_context: RuntimeContext
+    "ray runtime context"
+
+    graph: RayGraph
+    "ray node graph"
+
+    node_name: NodeName
+    "ray node name"
 
 
 _Event_co = TypeVar("_Event_co", bound="Event", covariant=True)
@@ -72,10 +80,16 @@ class _RayNodeMeta(type):
 
 def get_node_context() -> RayNodeContext:  # pragma: no cover
     """Get the context of the current RayGraph node."""
-    global _node_context
-    if _node_context is None:
-        _node_context = RayNodeContext(runtime_context=sunray.get_runtime_context())
-    return _node_context
+    from ray_graph import graph
+
+    if graph._node_context is None:
+        assert graph._graph is not None
+        runtime_context = sunray.get_runtime_context()
+        name = runtime_context.get_actor_name() or ""
+        graph._node_context = RayNodeContext(
+            runtime_context=runtime_context, graph=graph._graph, node_name=name
+        )
+    return graph._node_context
 
 
 class RayResources(TypedDict, total=False):
@@ -110,6 +124,9 @@ class RayNodeActor(sunray.ActorMixin):
     def __init__(self, ray_node: RayNode, ray_graph: RayGraph) -> None:
         self.ray_node = ray_node
         self.ray_graph = ray_graph
+        from ray_graph import graph
+
+        graph._graph = ray_graph
 
     @sunray.remote_method
     def remote_init(self) -> None:
