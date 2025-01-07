@@ -60,7 +60,7 @@ class TestRayNode:
 
                 return self.value
 
-        node_actor = RayNodeActor.new_actor().remote(CustomNode(), dummy_graph)
+        node_actor = RayNodeActor.new_actor().remote("", CustomNode(), dummy_graph)
         sunray.get(node_actor.methods.remote_init.remote())
         assert sunray.get(node_actor.methods.handle.remote(CustomEvent(value=2))) == 3
 
@@ -81,7 +81,9 @@ class TestRayNode:
                 return setproctitle.getproctitle()
 
         name = "test_ray_node_ref"
-        node_actor = RayNodeActor.new_actor().options(name=name).remote(CustomNode(), dummy_graph)
+        node_actor = (
+            RayNodeActor.new_actor().options(name=name).remote(name, CustomNode(), dummy_graph)
+        )
         labels = {"node": "mac"}
         node_ref = RayNodeRef(name, labels)
         assert node_ref.name == name
@@ -105,7 +107,9 @@ class TestRayNode:
         dag.add_node(RayNodeRef("node1"))
         node_name = "Test"
         node_actor = (
-            RayNodeActor.new_actor().options(name=node_name).remote(CustomNode(), RayGraph(dag))
+            RayNodeActor.new_actor()
+            .options(name=node_name)
+            .remote(node_name, CustomNode(), RayGraph(dag))
         )
         remote_ctx = sunray.get(node_actor.methods.handle.remote(GetContext()))
         assert remote_ctx["graph"] is not None
