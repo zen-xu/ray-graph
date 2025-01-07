@@ -252,3 +252,23 @@ class TestRayGraph:
     )
     def test_filter(self, graph_ref: RayGraphRef, predicate, expect):
         assert sorted(node.name for node in graph_ref.filter(predicate)) == expect
+
+    def test_start_graph(self, init_ray):
+        class GetNodeName(Event): ...
+
+        class CustomNode(RayNode):
+            @handle(GetNodeName)
+            def handle_get_node_name(self, event: GetNodeName) -> str:
+                return get_node_context().node_name
+
+        total_nodes = {
+            "node1": CustomNode(),
+            "node2": CustomNode(),
+            "node3": CustomNode(),
+        }
+        builder = RayGraphBuilder(total_nodes)
+        builder.set_parent("node2", "node1")
+        builder.set_children("node2", ["node3"])
+        graph = builder.build()
+        graph.start()
+        assert sunray.get(graph.get("node1").send(GetNodeName())) == "node1"
