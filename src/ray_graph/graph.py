@@ -170,7 +170,9 @@ class RayNodeRef:
         """The labels of the node."""
         return self._labels
 
-    def send(self, event: Event[_Rsp_co], **extra_ray_opts) -> sunray.ObjectRef[_Rsp_co]:
+    def send(
+        self, event: Event[_Rsp_co] | sunray.ObjectRef[Event[_Rsp_co]], **extra_ray_opts
+    ) -> sunray.ObjectRef[_Rsp_co]:
         """Send an event to the node."""
         return self._actor.methods.handle.options(
             name=f"{self.name}.handle[{type(event).__name__}]", **extra_ray_opts
