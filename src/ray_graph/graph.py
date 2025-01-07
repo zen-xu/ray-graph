@@ -158,9 +158,10 @@ class RayGraphBuilder:
     """The graph builder of ray nodes."""
 
     def __init__(self, total_nodes: Mapping[NodeName, RayNode]):
-        self._dag = rwx.PyDAG(check_cycle=True)
+        self._dag: rwx.PyDAG[RayNodeRef, None] = rwx.PyDAG(check_cycle=True)
+        self._total_nodes = total_nodes
         self._node_name_ids = {
-            node_name: self._dag.add_node((node_name, node))
+            node_name: self._dag.add_node(RayNodeRef(node_name, node.labels()))
             for node_name, node in total_nodes.items()
         }
 

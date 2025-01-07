@@ -94,7 +94,7 @@ class TestRayGraphBuilder:
         builder.set_parent("node2", "node1")  # add duplicate edge
         builder.set_children("node2", ["node3"])
 
-        got = builder._dag.to_dot(node_attr=lambda n: {"label": n[0]})
+        got = builder._dag.to_dot(node_attr=lambda n: {"label": n.name})
         got = got and got.strip()
         expect = dedent(
             """
