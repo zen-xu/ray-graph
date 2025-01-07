@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, Generic
 
+import rustworkx as rwx
 import sunray
 
 from typing_extensions import TypedDict, TypeVar
@@ -11,12 +12,16 @@ from typing_extensions import TypedDict, TypeVar
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping
+    from typing import TypeAlias
 
     from sunray._internal.core import RuntimeContext
 
     from ray_graph.event import Event, _Rsp_co
 
+NodeName: TypeAlias = str
+
 _node_context = None
+_graph: RayGraphRef | None = None
 
 
 @dataclass(frozen=True)
@@ -24,6 +29,13 @@ class RayNodeContext:
     """The context of a RayGraph node."""
 
     runtime_context: RuntimeContext
+    "ray runtime context"
+
+    graph: RayGraphRef
+    "ray node graph"
+
+    node_name: NodeName
+    "ray node name"
 
 
 _Event_co = TypeVar("_Event_co", bound="Event", covariant=True)
@@ -68,10 +80,17 @@ class _RayNodeMeta(type):
 
 def get_node_context() -> RayNodeContext:  # pragma: no cover
     """Get the context of the current RayGraph node."""
-    global _node_context
-    if _node_context is None:
-        _node_context = RayNodeContext(runtime_context=sunray.get_runtime_context())
-    return _node_context
+    from ray_graph import graph
+
+    if graph._node_context is None:
+        assert graph._graph is not None
+        runtime_context = sunray.get_runtime_context()
+        graph._node_context = RayNodeContext(
+            runtime_context=runtime_context,
+            graph=graph._graph,
+            node_name=runtime_context.get_actor_name() or "",
+        )
+    return graph._node_context
 
 
 class RayResources(TypedDict, total=False):
@@ -103,8 +122,16 @@ class RayNode(metaclass=_RayNodeMeta):  # pragma: no cover
 class RayNodeActor(sunray.ActorMixin):
     """The actor class for RayGraph nodes."""
 
-    def __init__(self, ray_node: RayNode) -> None:
+    def __init__(self, name: str, ray_node: RayNode, ray_graph: RayGraphRef) -> None:
+        self.name = name
         self.ray_node = ray_node
+        self.ray_graph = ray_graph
+        from ray_graph import graph
+
+        graph._graph = ray_graph
+
+    def __repr__(self) -> str:  # noqa: D105
+        return f"{self.ray_node.__class__.__name__}({self.name})"
 
     @sunray.remote_method
     def remote_init(self) -> None:
@@ -134,7 +161,7 @@ class RayNodeRef:
         return sunray.get_actor[RayNodeActor](self.name)
 
     @property
-    def name(self) -> str:
+    def name(self) -> NodeName:
         """The name of the node."""
         return self._name
 
@@ -148,3 +175,151 @@ class RayNodeRef:
         return self._actor.methods.handle.options(
             name=f"{self.name}.handle[{type(event).__name__}]", **extra_ray_opts
         ).remote(event)
+
+
+class RayGraphBuilder:
+    """The graph builder of ray nodes."""
+
+    def __init__(self, total_nodes: Mapping[NodeName, RayNode]):
+        self._dag: rwx.PyDAG[RayNodeRef, None] = rwx.PyDAG(check_cycle=True)
+        self._total_nodes = total_nodes
+        self._node_name_ids = {
+            node_name: self._dag.add_node(RayNodeRef(node_name, node.labels()))
+            for node_name, node in total_nodes.items()
+        }
+
+    def set_parent(self, child: NodeName, parent: NodeName) -> None:
+        """Set the parent of the child node."""
+        child_id = self._node_name_ids[child]
+        parent_id = self._node_name_ids[parent]
+        if not self._dag.has_edge(parent_id, child_id):
+            self._dag.add_edge(parent_id, child_id, None)
+
+    def set_children(self, parent: NodeName, children: list[NodeName]) -> None:
+        """Set the children of the parent node."""
+        for child in children:
+            self.set_parent(child, parent)
+
+    def build(self) -> RayGraph:  # pragma: no cover
+        """Build the ray graph."""
+        return RayGraph(self._dag, self._total_nodes)
+
+
+class RayGraph:  # pragma: no cover
+    """The graph of ray nodes."""
+
+    def __init__(
+        self, dag: rwx.PyDAG[RayNodeRef, None], total_nodes: Mapping[NodeName, RayNode]
+    ) -> None:
+        self._graph_ref = RayGraphRef(dag)
+        self._total_nodes = total_nodes
+        self._node_actors: Mapping[NodeName, sunray.Actor[RayNodeActor]] | None = None
+
+    @property
+    def ref(self) -> RayGraphRef:
+        """The reference of RayGraph."""
+        return self._graph_ref
+
+    def start(self) -> None:
+        """Create all ray node actors and start these actors."""
+        if not self._node_actors:
+            graph_obj_ref = sunray.put(self._graph_ref)
+            self._node_actors = {
+                name: RayNodeActor.new_actor()
+                .options(name=name, **node.resources())
+                .remote(name, node, graph_obj_ref)
+                for name, node in self._total_nodes.items()
+            }
+            # remote init ray node actors
+            sunray.get(
+                [actor.methods.remote_init.remote() for actor in self._node_actors.values()]
+            )
+
+    def get(self, node: NodeName) -> RayNodeRef:
+        """Get the node reference of the given name."""
+        assert self._node_actors, "start RayGraph first"
+        return self._graph_ref.get(node)
+
+    def filter(self, predicate: Callable[[RayNodeRef], bool]) -> list[RayNodeRef]:
+        """Filter the nodes by the given predicate."""
+        assert self._node_actors, "start RayGraph first"
+        return self._graph_ref.filter(predicate)
+
+    def get_parents(self, child: NodeName) -> list[RayNodeRef]:
+        """Get the parent node references of the child node."""
+        assert self._node_actors, "start RayGraph first"
+        return self._graph_ref.get_parents(child)
+
+    def get_children(self, parent: NodeName) -> list[RayNodeRef]:
+        """Get the children node references of the parent node."""
+        assert self._node_actors, "start RayGraph first"
+        return self._graph_ref.get_children(parent)
+
+    def get_roots(self, node: NodeName) -> list[RayNodeRef]:
+        """Get the root node references of the graph."""
+        assert self._node_actors, "start RayGraph first"
+        return self._graph_ref.get_roots(node)
+
+    def get_leaves(self, node: NodeName) -> list[RayNodeRef]:
+        """Get the leaf node references of current node."""
+        assert self._node_actors, "start RayGraph first"
+        return self._graph_ref.get_leaves(node)
+
+    def get_siblings(self, node: NodeName) -> list[RayNodeRef]:
+        """Get the sibling node references of the current node."""
+        assert self._node_actors, "start RayGraph first"
+        return self._graph_ref.get_siblings(node)
+
+
+class RayGraphRef:
+    """The graph reference of ray nodes."""
+
+    def __init__(self, dag: rwx.PyDAG[RayNodeRef, None]):
+        self._dag = dag
+        self._node_ids: Mapping[NodeName, int] = {
+            node_ref.name: node_id for node_id, node_ref in enumerate(self._dag.nodes())
+        }
+
+    def get(self, node: NodeName) -> RayNodeRef:
+        """Get the node reference of the given name."""
+        return self._dag.get_node_data(self._node_ids[node])
+
+    def filter(self, predicate: Callable[[RayNodeRef], bool]) -> list[RayNodeRef]:
+        """Filter the nodes by the given predicate."""
+        return [node for node in self._dag.nodes() if predicate(node)]
+
+    def get_parents(self, child: NodeName) -> list[RayNodeRef]:
+        """Get the parent node references of the child node."""
+        child_id = self._node_ids[child]
+        return self._dag.predecessors(child_id)
+
+    def get_children(self, parent: NodeName) -> list[RayNodeRef]:
+        """Get the children node references of the parent node."""
+        parent_id = self._node_ids[parent]
+        return self._dag.successors(parent_id)
+
+    def get_roots(self, node: NodeName) -> list[RayNodeRef]:
+        """Get the root node references of the graph."""
+        return [
+            self._dag.get_node_data(ancestor_id)
+            for ancestor_id in rwx.ancestors(self._dag, self._node_ids[node])
+            if not rwx.ancestors(self._dag, ancestor_id)
+        ]
+
+    def get_leaves(self, node: NodeName) -> list[RayNodeRef]:
+        """Get the leaf node references of current node."""
+        return [
+            self._dag.get_node_data(ancestor_id)
+            for ancestor_id in rwx.descendants(self._dag, self._node_ids[node])
+            if not rwx.descendants(self._dag, ancestor_id)
+        ]
+
+    def get_siblings(self, node: NodeName) -> list[RayNodeRef]:
+        """Get the sibling node references of the current node."""
+        parent_node_names = [node.name for node in self.get_parents(node)]
+        return [
+            sibling
+            for parent_node_name in parent_node_names
+            for sibling in self.get_children(parent_node_name)
+            if sibling.name != node
+        ]
