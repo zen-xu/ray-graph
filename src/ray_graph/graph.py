@@ -214,6 +214,11 @@ class RayGraph:  # pragma: no cover
         self._total_nodes = total_nodes
         self._node_actors: Mapping[NodeName, sunray.Actor[RayNodeActor]] | None = None
 
+    @property
+    def ref(self) -> RayGraphRef:
+        """The reference of RayGraph."""
+        return self._graph_ref
+
     def start(self) -> None:
         """Create all ray node actors and start these actors."""
         if not self._node_actors:
