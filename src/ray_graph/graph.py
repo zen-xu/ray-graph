@@ -230,7 +230,7 @@ class RayGraph:  # pragma: no cover
     def start(
         self,
         *,
-        place_actors: tuple[
+        placement_rule: tuple[
             Callable[[NodeName, RayNode], PlacementName | None],
             Mapping[PlacementName, PlacementStrategy],
         ]
@@ -240,8 +240,8 @@ class RayGraph:  # pragma: no cover
         """Create all ray node actors and start these actors."""
         if not self._node_actors:
             graph_obj_ref = sunray.put(self._graph_ref)
-            if place_actors:
-                place_func, strategies = place_actors
+            if placement_rule:
+                place_func, strategies = placement_rule
                 placement_nodes: defaultdict[PlacementName, list[NodeName]] = defaultdict(list)
                 node_placement_names: dict[NodeName, PlacementName] = {}
 

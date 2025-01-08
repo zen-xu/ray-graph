@@ -295,7 +295,7 @@ class TestRayGraph:
         builder.set_children("node", ["leaf1", "leaf2"])
         graph = builder.build()
         graph.start(
-            place_actors=(
+            placement_rule=(
                 lambda node_name, _: "leaf" if node_name.startswith("leaf") else None,
                 {"leaf": "SPREAD"},
             )
@@ -323,7 +323,7 @@ class TestRayGraph:
         graph = builder.build()
         with pytest.raises(RuntimeError, match=r"Placement \['leaf'\] missing placement strategy"):
             graph.start(
-                place_actors=(
+                placement_rule=(
                     lambda node_name, _: "leaf" if node_name.startswith("leaf") else None,
                     {"leaf1": "SPREAD"},
                 )
