@@ -21,7 +21,7 @@ dependencies = [
   "rustworkx>=0.15",
 ]
 [project.optional-dependencies]
-progress = ["rich"]
+rich = ["rich"]
 
 [project.urls]
 homepage   = "https://github.com/zen-xu/ray-graph"
@@ -65,10 +65,10 @@ python = "3.11.*"
 python = "3.12.*"
 
 [tool.pixi.environments]
-default = ["py312", "progress"]
-py310   = ["py310", "progress"]
-py311   = ["py311", "progress"]
-py312   = ["py312", "progress"]
+default = ["py312", "rich"]
+py310   = ["py310", "rich"]
+py311   = ["py311", "rich"]
+py312   = ["py312", "rich"]
 
 # -------------------------------- Ruff --------------------------------
 
