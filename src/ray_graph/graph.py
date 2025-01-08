@@ -18,8 +18,10 @@ if TYPE_CHECKING:
     from typing import TypeAlias
 
     from sunray._internal.core import RuntimeContext
+    from sunray._internal.typing import RuntimeEnv, SchedulingStrategy
 
     from ray_graph.event import Event, _Rsp_co
+
 
 NodeName: TypeAlias = str
 PlacementName: TypeAlias = str
@@ -107,6 +109,25 @@ class RayResources(TypedDict, total=False):
     resources: dict[str, float]
 
 
+class ActorRemoteOptions(TypedDict, total=False):
+    """The ray actor remote options."""
+
+    num_cpus: float
+    num_gpus: float
+    resources: dict[str, float]
+    accelerator_type: str
+    memory: float
+    object_store_memory: float
+    max_restarts: int
+    max_task_retries: int
+    max_pending_calls: int
+    max_concurrency: int
+    lifetime: Literal["detached"] | None
+    runtime_env: RuntimeEnv | dict[str, Any]
+    concurrency_groups: dict[str, int]
+    scheduling_strategy: SchedulingStrategy
+
+
 class RayNode(metaclass=_RayNodeMeta):  # pragma: no cover
     """The base class for all RayGraph nodes."""
 
@@ -119,8 +140,8 @@ class RayNode(metaclass=_RayNodeMeta):  # pragma: no cover
         """The labels of the node, which will inject into its node reference."""
         return {}
 
-    def resources(self) -> RayResources:
-        """Declare the ray actor resources."""
+    def actor_options(self) -> ActorRemoteOptions:
+        """Declare the ray actor remote options."""
         return {"num_cpus": 1}
 
 
@@ -260,7 +281,7 @@ class RayGraph:  # pragma: no cover
                     placement_name: placement_group(
                         [
                             _convert_ray_resources_to_placement_bundle(
-                                self._total_nodes[node].resources()
+                                self._total_nodes[node].actor_options()
                             )
                             for node in nodes
                         ],
@@ -274,7 +295,7 @@ class RayGraph:  # pragma: no cover
 
                 def create_node_actors():
                     for node_name, node in self._total_nodes.items():
-                        options = {"name": node_name, **node.resources()}
+                        options = {"name": node_name, **node.actor_options()}
                         if placement_name := node_placement_names.get(node_name):
                             pg = placement_groups[placement_name]
                             options["scheduling_strategy"] = PlacementGroupSchedulingStrategy(
@@ -294,7 +315,7 @@ class RayGraph:  # pragma: no cover
             else:
                 self._node_actors = {
                     name: RayNodeActor.new_actor()
-                    .options(name=name, **node.resources())
+                    .options(name=name, **node.actor_options())
                     .remote(name, node, graph_obj_ref)
                     for name, node in self._total_nodes.items()
                 }
