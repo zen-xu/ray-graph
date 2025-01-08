@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import warnings
+
 from collections import defaultdict
 from dataclasses import dataclass
 from functools import cached_property
@@ -233,6 +235,10 @@ class RayGraphBuilder:
         return RayGraph(self._dag, self._total_nodes)
 
 
+class PlacementWarning(Warning):
+    """The placement warning."""
+
+
 class RayGraph:  # pragma: no cover
     """The graph of ray nodes."""
 
@@ -298,6 +304,11 @@ class RayGraph:  # pragma: no cover
                         options = {"name": node_name, **node.actor_options()}
                         if placement_name := node_placement_names.get(node_name):
                             pg = placement_groups[placement_name]
+                            if "scheduling_strategy" in options:
+                                warnings.warn(
+                                    f"Node {node_name} specified scheduling_strategy and will replace it with PlacementGroupSchedulingStrategy({placement_name})",  # noqa: E501
+                                    category=PlacementWarning,
+                                )
                             options["scheduling_strategy"] = PlacementGroupSchedulingStrategy(
                                 pg,
                                 placement_group_bundle_index=placement_nodes[placement_name].index(
