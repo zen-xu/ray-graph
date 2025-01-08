@@ -6,13 +6,14 @@ import warnings
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Generic, Literal
+from typing import TYPE_CHECKING, Any, Generic, Literal, overload
 
 import rustworkx as rwx
 import sunray
 
 from ray.util.placement_group import placement_group
 from ray.util.scheduling_strategies import PlacementGroupSchedulingStrategy
+from rustworkx.visualization import graphviz_draw
 from typing_extensions import TypedDict, TypeVar
 
 
@@ -23,6 +24,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Mapping
     from typing import TypeAlias
 
+    from PIL.Image import Image
     from ray.util.placement_group import PlacementGroup
     from sunray._internal.core import RuntimeContext
     from sunray._internal.typing import RuntimeEnv, SchedulingStrategy
@@ -380,6 +382,200 @@ class RayGraph:  # pragma: no cover
         """Get the sibling node references of the current node."""
         assert self._node_actors, "start RayGraph first"
         return self._graph_ref.get_siblings(node)
+
+    @overload
+    def graphviz_draw(
+        self,
+        node_attr_fn: Callable[[RayNodeRef], dict[str, str]] | None = None,
+        graph_attr: dict[str, str] | None = None,
+        *,
+        image_type: Literal[
+            "canon",
+            "cmap",
+            "cmapx",
+            "cmapx_np",
+            "dia",
+            "dot",
+            "fig",
+            "gd",
+            "gd2",
+            "gif",
+            "hpgl",
+            "imap",
+            "imap_np",
+            "ismap",
+            "jpe",
+            "jpeg",
+            "jpg",
+            "mif",
+            "mp",
+            "pcl",
+            "pdf",
+            "pic",
+            "plain",
+            "plain-ext",
+            "png",
+            "ps",
+            "ps2",
+            "svg",
+            "svgz",
+            "vml",
+            "vmlz",
+            "vrml",
+            "vtx",
+            "wbmp",
+            "xdot",
+            "xlib",
+        ]
+        | None = None,
+        method: Literal["dot", "twopi", "neato", "circo", "fdp", "sfdp"] | None = None,
+        filename: None = None,
+    ) -> Image: ...
+
+    @overload
+    def graphviz_draw(
+        self,
+        node_attr_fn: Callable[[RayNodeRef], dict[str, str]] | None = None,
+        graph_attr: dict[str, str] | None = None,
+        *,
+        image_type: Literal[
+            "canon",
+            "cmap",
+            "cmapx",
+            "cmapx_np",
+            "dia",
+            "dot",
+            "fig",
+            "gd",
+            "gd2",
+            "gif",
+            "hpgl",
+            "imap",
+            "imap_np",
+            "ismap",
+            "jpe",
+            "jpeg",
+            "jpg",
+            "mif",
+            "mp",
+            "pcl",
+            "pdf",
+            "pic",
+            "plain",
+            "plain-ext",
+            "png",
+            "ps",
+            "ps2",
+            "svg",
+            "svgz",
+            "vml",
+            "vmlz",
+            "vrml",
+            "vtx",
+            "wbmp",
+            "xdot",
+            "xlib",
+        ]
+        | None = None,
+        method: Literal["dot", "twopi", "neato", "circo", "fdp", "sfdp"] | None = None,
+        filename: str,
+    ) -> None: ...
+
+    def graphviz_draw(
+        self,
+        node_attr_fn: Callable[[RayNodeRef], dict[str, str]] | None = None,
+        graph_attr: dict[str, str] | None = None,
+        *,
+        filename: str | None = None,
+        image_type: Literal[
+            "canon",
+            "cmap",
+            "cmapx",
+            "cmapx_np",
+            "dia",
+            "dot",
+            "fig",
+            "gd",
+            "gd2",
+            "gif",
+            "hpgl",
+            "imap",
+            "imap_np",
+            "ismap",
+            "jpe",
+            "jpeg",
+            "jpg",
+            "mif",
+            "mp",
+            "pcl",
+            "pdf",
+            "pic",
+            "plain",
+            "plain-ext",
+            "png",
+            "ps",
+            "ps2",
+            "svg",
+            "svgz",
+            "vml",
+            "vmlz",
+            "vrml",
+            "vtx",
+            "wbmp",
+            "xdot",
+            "xlib",
+        ]
+        | None = None,
+        method: Literal["dot", "twopi", "neato", "circo", "fdp", "sfdp"] | None = None,
+    ) -> Image | None:
+        """Draw RayGraph using graphviz.
+
+        :param node_attr_fn: An optional callable object that will be passed the
+            weight/data payload for every node in the graph and expected to return
+            a dictionary of Graphviz node attributes to be associated with the node
+            in the visualization. The key and value of this dictionary **must** be
+            a string.
+        :param dict graph_attr: An optional dictionary that specifies any Graphviz
+            graph attributes for the visualization. The key and value of this
+            dictionary must be a string.
+        :param str filename: An optional path to write the visualization to. If
+            specified the return type from this function will be ``None`` as the
+            output image is saved to disk.
+        :param str image_type: The image file format to use for the generated
+            visualization. The support image formats are:
+            ``'canon'``, ``'cmap'``, ``'cmapx'``, ``'cmapx_np'``, ``'dia'``,
+            ``'dot'``, ``'fig'``, ``'gd'``, ``'gd2'``, ``'gif'``, ``'hpgl'``,
+            ``'imap'``, ``'imap_np'``, ``'ismap'``, ``'jpe'``, ``'jpeg'``,
+            ``'jpg'``, ``'mif'``, ``'mp'``, ``'pcl'``, ``'pdf'``, ``'pic'``,
+            ``'plain'``, ``'plain-ext'``, ``'png'``, ``'ps'``, ``'ps2'``,
+            ``'svg'``, ``'svgz'``, ``'vml'``, ``'vmlz'``, ``'vrml'``, ``'vtx'``,
+            ``'wbmp'``, ``'xdot'``, ``'xlib'``. It's worth noting that while these
+            formats can all be used for generating image files when the ``filename``
+            kwarg is specified, the Pillow library used for the returned object can
+            not work with all these formats.
+        :param str method: The layout method/Graphviz command method to use for
+            generating the visualization. Available options are ``'dot'``,
+            ``'twopi'``, ``'neato'``, ``'circo'``, ``'fdp'``, and ``'sfdp'``.
+            You can refer to the
+            `Graphviz documentation <https://graphviz.org/documentation/>`__ for
+            more details on the different layout methods. By default ``'dot'`` is
+            used.
+
+        :returns: A ``PIL.Image`` object of the generated visualization, if
+            ``filename`` is not specified. If ``filename`` is specified then
+            ``None`` will be returned as the visualization was written to the
+            path specified in ``filename``
+        :rtype: PIL.Image
+        """
+        node_attr_fn = node_attr_fn or (lambda n: {"label": n.name})
+        return graphviz_draw(
+            self._graph_ref._dag,
+            node_attr_fn=node_attr_fn,
+            graph_attr=graph_attr,
+            filename=filename,
+            image_type=image_type,
+            method=method,
+        )
 
 
 class RayGraphRef:

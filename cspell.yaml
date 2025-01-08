@@ -6,9 +6,23 @@ ignorePaths:
 dictionaries:
   - python
 words:
+  - circo
+  - cmap
+  - cmapx
   - cpus
   - getproctitle
+  - hpgl
+  - neato
   - pyupgrade
+  - rtype
+  - sfdp
   - sunray
+  - svgz
   - taplo
+  - twopi
   - uncenter
+  - vmlz
+  - vrml
+  - wbmp
+  - xdot
+  - xlib
