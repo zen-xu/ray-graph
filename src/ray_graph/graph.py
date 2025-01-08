@@ -484,7 +484,9 @@ class _WaitNode(TypedDict):
     node: RayNode
 
 
-def _wait_node_init(node_actors: Mapping[NodeName, _WaitNode], *, disable_rich: bool = False):
+def _wait_node_init(
+    node_actors: Mapping[NodeName, _WaitNode], *, disable_rich: bool = False
+):  # pragma: no cover
     not_readies = [item["actor"].methods.remote_init.remote() for _, item in node_actors.items()]
     if not _rich_enabled or disable_rich:
         sunray.wait(not_readies, num_returns=len(not_readies))
