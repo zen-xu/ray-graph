@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+from collections import defaultdict
 from dataclasses import dataclass
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Generic
+from typing import TYPE_CHECKING, Any, Generic, Literal
 
 import rustworkx as rwx
 import sunray
 
+from ray.util.placement_group import placement_group
+from ray.util.scheduling_strategies import PlacementGroupSchedulingStrategy
 from typing_extensions import TypedDict, TypeVar
 
 
@@ -19,6 +22,8 @@ if TYPE_CHECKING:
     from ray_graph.event import Event, _Rsp_co
 
 NodeName: TypeAlias = str
+PlacementName: TypeAlias = str
+PlacementStrategy = Literal["PACK", "SPREAD", "STRICT_PACK", "STRICT_SPREAD"]
 
 _node_context = None
 _graph: RayGraphRef | None = None
@@ -99,7 +104,7 @@ class RayResources(TypedDict, total=False):
     num_cpus: float
     num_gpus: float
     memory: float
-    custom_resources: Mapping[str, float]
+    resources: dict[str, float]
 
 
 class RayNode(metaclass=_RayNodeMeta):  # pragma: no cover
@@ -222,16 +227,77 @@ class RayGraph:  # pragma: no cover
         """The reference of RayGraph."""
         return self._graph_ref
 
-    def start(self) -> None:
+    def start(
+        self,
+        *,
+        place_actors: tuple[
+            Callable[[NodeName, RayNode], PlacementName | None],
+            Mapping[PlacementName, PlacementStrategy],
+        ]
+        | None = None,
+        **_future_opts,
+    ) -> None:
         """Create all ray node actors and start these actors."""
         if not self._node_actors:
             graph_obj_ref = sunray.put(self._graph_ref)
-            self._node_actors = {
-                name: RayNodeActor.new_actor()
-                .options(name=name, **node.resources())
-                .remote(name, node, graph_obj_ref)
-                for name, node in self._total_nodes.items()
-            }
+            if place_actors:
+                place_func, strategies = place_actors
+                placement_nodes: defaultdict[PlacementName, list[NodeName]] = defaultdict(list)
+                node_placement_names: dict[NodeName, PlacementName] = {}
+
+                for node_name, node in self._total_nodes.items():
+                    if placement_name := place_func(node_name, node):
+                        placement_nodes[placement_name].append(node_name)
+                        node_placement_names[node_name] = placement_name
+                placement_missing_strategies = sorted(set(placement_nodes) - set(strategies))
+                if placement_missing_strategies:
+                    raise RuntimeError(
+                        f"Placement {placement_missing_strategies} missing placement strategy"
+                    )
+
+                # create the placement groups
+                placement_groups = {
+                    placement_name: placement_group(
+                        [
+                            _convert_ray_resources_to_placement_bundle(
+                                self._total_nodes[node].resources()
+                            )
+                            for node in nodes
+                        ],
+                        name=placement_name,
+                        strategy=strategies[placement_name],
+                    )
+                    for placement_name, nodes in placement_nodes.items()
+                }
+                # waiting placement group to be ready
+                sunray.get([pg.ready() for pg in placement_groups.values()])
+
+                def create_node_actors():
+                    for node_name, node in self._total_nodes.items():
+                        options = {"name": node_name, **node.resources()}
+                        if placement_name := node_placement_names.get(node_name):
+                            pg = placement_groups[placement_name]
+                            options["scheduling_strategy"] = PlacementGroupSchedulingStrategy(
+                                pg,
+                                placement_group_bundle_index=placement_nodes[placement_name].index(
+                                    node_name
+                                ),
+                            )
+                        yield (
+                            node_name,
+                            RayNodeActor.new_actor()
+                            .options(**options)
+                            .remote(node_name, node, graph_obj_ref),
+                        )
+
+                self._node_actors = dict(create_node_actors())
+            else:
+                self._node_actors = {
+                    name: RayNodeActor.new_actor()
+                    .options(name=name, **node.resources())
+                    .remote(name, node, graph_obj_ref)
+                    for name, node in self._total_nodes.items()
+                }
             # remote init ray node actors
             sunray.get(
                 [actor.methods.remote_init.remote() for actor in self._node_actors.values()]
@@ -325,3 +391,13 @@ class RayGraphRef:
             for sibling in self.get_children(parent_node_name)
             if sibling.name != node
         ]
+
+
+def _convert_ray_resources_to_placement_bundle(resources: RayResources) -> dict[str, float]:
+    bundle = {
+        "CPU": resources.get("num_cpus"),
+        "GPU": resources.get("num_gpus"),
+        "memory": resources.get("memory"),
+        **resources.get("resources", {}),
+    }
+    return {k: v for k, v in bundle.items() if v}

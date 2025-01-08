@@ -15,6 +15,8 @@ from ray_graph.graph import (
     RayNode,
     RayNodeActor,
     RayNodeRef,
+    RayResources,
+    _convert_ray_resources_to_placement_bundle,
     get_node_context,
     handle,
 )
@@ -272,3 +274,12 @@ class TestRayGraph:
         graph = builder.build()
         graph.start()
         assert sunray.get(graph.get("node1").send(GetNodeName())) == "node1"
+
+
+def test_convert_ray_resources_to_placement_bundle():
+    ray_resources: RayResources = {"num_cpus": 1, "memory": 1000, "resources": {"disk": 1}}
+    assert _convert_ray_resources_to_placement_bundle(ray_resources) == {
+        "CPU": 1,
+        "memory": 1000,
+        "disk": 1,
+    }
