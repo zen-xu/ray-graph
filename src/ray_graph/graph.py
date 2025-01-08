@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import importlib.util
 import warnings
 
-from collections import defaultdict
+from collections import Counter, defaultdict
 from dataclasses import dataclass
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, Generic, Literal
@@ -15,10 +16,14 @@ from ray.util.scheduling_strategies import PlacementGroupSchedulingStrategy
 from typing_extensions import TypedDict, TypeVar
 
 
+_rich_enabled = importlib.util.find_spec("rich") is not None
+
+
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping
     from typing import TypeAlias
 
+    from ray.util.placement_group import PlacementGroup
     from sunray._internal.core import RuntimeContext
     from sunray._internal.typing import RuntimeEnv, SchedulingStrategy
 
@@ -162,9 +167,10 @@ class RayNodeActor(sunray.ActorMixin):
         return f"{self.ray_node.__class__.__name__}({self.name})"
 
     @sunray.remote_method
-    def remote_init(self) -> None:
+    def remote_init(self) -> str:
         """Invoke ray_node remote init method."""
         self.ray_node.remote_init()
+        return self.name
 
     @sunray.remote_method
     def handle(self, event: Event[_Rsp_co]) -> _Rsp_co:
@@ -262,6 +268,7 @@ class RayGraph:  # pragma: no cover
             Mapping[PlacementName, PlacementStrategy],
         ]
         | None = None,
+        disable_rich: bool = False,
         **_future_opts,
     ) -> None:
         """Create all ray node actors and start these actors."""
@@ -297,7 +304,7 @@ class RayGraph:  # pragma: no cover
                     for placement_name, nodes in placement_nodes.items()
                 }
                 # waiting placement group to be ready
-                sunray.get([pg.ready() for pg in placement_groups.values()])
+                _wait_placement_group_ready(placement_groups, disable_rich=disable_rich)
 
                 def create_node_actors():
                     for node_name, node in self._total_nodes.items():
@@ -331,8 +338,12 @@ class RayGraph:  # pragma: no cover
                     for name, node in self._total_nodes.items()
                 }
             # remote init ray node actors
-            sunray.get(
-                [actor.methods.remote_init.remote() for actor in self._node_actors.values()]
+            _wait_node_init(
+                {
+                    name: {"actor": self._node_actors[name], "node": self._total_nodes[name]}
+                    for name in self._total_nodes
+                },
+                disable_rich=disable_rich,
             )
 
     def get(self, node: NodeName) -> RayNodeRef:
@@ -433,3 +444,69 @@ def _convert_ray_resources_to_placement_bundle(resources: RayResources) -> dict[
         **resources.get("resources", {}),
     }
     return {k: v for k, v in bundle.items() if v}
+
+
+def _wait_placement_group_ready(
+    placement_groups: Mapping[PlacementName, PlacementGroup], *, disable_rich: bool = False
+):  # pragma: no cover
+    pg_readies = {pg_name: pg.ready() for pg_name, pg in placement_groups.items()}
+    if not _rich_enabled or disable_rich:
+        sunray.wait(list(pg_readies.values()), num_returns=len(pg_readies))
+
+    from rich.live import Live
+    from rich.spinner import Spinner
+    from rich.table import Table
+
+    pg_status = {name: "Pending" for name in pg_readies}
+
+    def render_table(pg_status):
+        table = Table(title="Placement Group Status")
+        table.add_column("Placement", justify="center")
+        table.add_column("Status", justify="center")
+
+        for name, status in pg_status.items():
+            table.add_row(name, Spinner("dots", text="Pending") if status == "Pending" else "✅")
+        return table
+
+    pg_names = {pg: name for name, pg in placement_groups.items()}
+    with Live(render_table(pg_status)) as live:
+        not_readies = list(pg_readies.values())
+        while not_readies:
+            readies, not_readies = sunray.wait(not_readies)
+            for ready_pg in sunray.get(readies):
+                ready_pg_name = pg_names[ready_pg]
+                pg_status[ready_pg_name] = "Ready"
+                live.update(render_table(pg_status))
+
+
+class _WaitNode(TypedDict):
+    actor: sunray.Actor[RayNodeActor]
+    node: RayNode
+
+
+def _wait_node_init(node_actors: Mapping[NodeName, _WaitNode], *, disable_rich: bool = False):
+    not_readies = [item["actor"].methods.remote_init.remote() for _, item in node_actors.items()]
+    if not _rich_enabled or disable_rich:
+        sunray.wait(not_readies, num_returns=len(not_readies))
+
+    from rich.progress import BarColumn, MofNCompleteColumn, Progress, TextColumn
+
+    node_to_classes = {
+        node_name: item["node"].__class__.__name__ for node_name, item in node_actors.items()
+    }
+    class_node_counter = Counter(node_to_classes.values())
+
+    with Progress(
+        TextColumn("Init {task.description}"),
+        BarColumn(),
+        MofNCompleteColumn(),
+    ) as progress:
+        tasks = {
+            class_name: progress.add_task(f"[bold yellow]{class_name}", total=total)
+            for class_name, total in class_node_counter.items()
+        }
+
+        while not_readies:
+            readies, not_readies = sunray.wait(not_readies)
+            for node_name in sunray.get(readies):
+                progress.update(tasks[node_to_classes[node_name]], advance=1)
