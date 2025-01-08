@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import inspect
 import warnings
 
 from collections import Counter, defaultdict
@@ -21,7 +22,7 @@ _rich_enabled = importlib.util.find_spec("rich") is not None
 
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Mapping
+    from collections.abc import Awaitable, Callable, Mapping
     from typing import TypeAlias
 
     from PIL.Image import Image
@@ -64,7 +65,7 @@ class _EventHandler(Generic[_Event_co]):
 
     def __call__(
         self: _EventHandler[Event[_Rsp_co]],
-        handler_func: Callable[[_RayNode_co, _Event_co], _Rsp_co],
+        handler_func: Callable[[_RayNode_co, _Event_co], _Rsp_co | Awaitable[_Rsp_co]],
     ) -> Any:
         self.handler_func = handler_func
         return self
@@ -75,19 +76,35 @@ def handle(event_t: type[_Event_co]) -> _EventHandler[_Event_co]:
     return _EventHandler(event_t)
 
 
+class RegisterHandlerError(Exception):
+    """Raise Error when register handler failed."""
+
+
 class _RayNodeMeta(type):
     def __new__(cls, name, bases, attrs):
         attrs.setdefault("_event_handlers", {})
         event_handlers = attrs["_event_handlers"]
         for _, attr_value in attrs.items():
             if isinstance(attr_value, _EventHandler):
+                mod = attrs["__module__"]
+                qual = attrs["__qualname__"]
                 if attr_value.event_t in event_handlers:
-                    mod = attrs["__module__"]
-                    qual = attrs["__qualname__"]
                     event_t = attr_value.event_t
-                    raise ValueError(
+                    raise RegisterHandlerError(
                         f"<class '{mod}.{qual}'> got duplicate event handler for {event_t}"
                     )
+                if RayAsyncNode in bases:
+                    # event_handler must be async func for RayAsyncNode
+                    if not inspect.iscoroutinefunction(attr_value.handler_func):
+                        raise RegisterHandlerError(
+                            f"<class '{mod}.{qual}'> method '{attr_value.handler_func.__name__}' must be async func"  # noqa: E501
+                        )
+                else:
+                    # event_handler must not be async func for RayNode
+                    if inspect.iscoroutinefunction(attr_value.handler_func):
+                        raise RegisterHandlerError(
+                            f"<class '{mod}.{qual}'> method {attr_value.handler_func.__name__} can't be async func"  # noqa: E501
+                        )
                 event_handlers[attr_value.event_t] = attr_value
         # remove event handler functions from attrs
         attrs = {k: v for k, v in attrs.items() if not isinstance(v, _EventHandler)}
@@ -154,6 +171,10 @@ class RayNode(metaclass=_RayNodeMeta):  # pragma: no cover
         return {"num_cpus": 1}
 
 
+class RayAsyncNode(RayNode):
+    """The base async RayNode."""
+
+
 class RayNodeActor(sunray.ActorMixin):
     """The actor class for RayGraph nodes."""
 
@@ -181,6 +202,20 @@ class RayNodeActor(sunray.ActorMixin):
         event_handler = self.ray_node._event_handlers.get(event_type)
         if event_handler:
             return event_handler.handler_func(self.ray_node, event)  # type: ignore
+
+        raise ValueError(f"no handler for event {event_type}")
+
+
+class RayAsyncNodeActor(RayNodeActor):  # pragma: no cover
+    """The async version actor class for RayGraph nodes."""
+
+    @sunray.remote_method
+    async def handle(self, event: Event[_Rsp_co]) -> _Rsp_co:
+        """Handle the given event."""
+        event_type = type(event)
+        event_handler = self.ray_node._event_handlers.get(event_type)
+        if event_handler:
+            return await event_handler.handler_func(self.ray_node, event)  # type: ignore
 
         raise ValueError(f"no handler for event {event_type}")
 
@@ -324,9 +359,12 @@ class RayGraph:  # pragma: no cover
                                     node_name
                                 ),
                             )
+                        actor_class = (
+                            RayAsyncNodeActor if isinstance(node, RayAsyncNode) else RayNodeActor
+                        )
                         yield (
                             node_name,
-                            RayNodeActor.new_actor()
+                            actor_class.new_actor()
                             .options(**options)
                             .remote(node_name, node, graph_obj_ref),
                         )
@@ -334,7 +372,8 @@ class RayGraph:  # pragma: no cover
                 self._node_actors = dict(create_node_actors())
             else:
                 self._node_actors = {
-                    name: RayNodeActor.new_actor()
+                    name: (RayAsyncNodeActor if isinstance(node, RayAsyncNode) else RayNodeActor)
+                    .new_actor()
                     .options(name=name, **node.actor_options())
                     .remote(name, node, graph_obj_ref)
                     for name, node in self._total_nodes.items()

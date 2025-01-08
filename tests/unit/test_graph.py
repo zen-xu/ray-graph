@@ -15,12 +15,14 @@ from ray_graph.event import Event
 from ray_graph.graph import (
     ActorRemoteOptions,
     PlacementWarning,
+    RayAsyncNode,
     RayGraphBuilder,
     RayGraphRef,
     RayNode,
     RayNodeActor,
     RayNodeRef,
     RayResources,
+    RegisterHandlerError,
     _convert_ray_resources_to_placement_bundle,
     get_node_context,
     handle,
@@ -47,7 +49,7 @@ class TestRayNode:
         assert not hasattr(CustomNode, "handle_custom_event")
 
     def test_register_duplicate_event_handler(self):
-        with pytest.raises(ValueError, match="got duplicate event handler for"):
+        with pytest.raises(RegisterHandlerError, match="got duplicate event handler for"):
 
             class CustomNode(RayNode):
                 @handle(CustomEvent)
@@ -55,6 +57,20 @@ class TestRayNode:
 
                 @handle(CustomEvent)
                 def handle_custom_event2(self, event: CustomEvent) -> Any: ...
+
+    def test_register_async_handler_for_ray_node(self):
+        with pytest.raises(RegisterHandlerError, match="can't be async func"):
+
+            class CustomNode(RayNode):
+                @handle(CustomEvent)
+                async def handle_custom_event(self, event: CustomEvent) -> Any: ...
+
+    def test_register_non_async_handler_for_ray_async_node(self):
+        with pytest.raises(RegisterHandlerError, match="must be async func"):
+
+            class CustomNode(RayAsyncNode):
+                @handle(CustomEvent)
+                def handle_custom_event(self, event: CustomEvent) -> Any: ...
 
     def test_ray_node_actor_handle_event(self, init_local_ray, dummy_graph):
         class CustomNode(RayNode):
@@ -366,6 +382,20 @@ class TestRayGraph:
                     {"leaf1": "SPREAD"},
                 )
             )
+
+    def test_async_node_actor(self, init_ray):
+        class GetNodeName(Event): ...
+
+        class CustomNode(RayAsyncNode):
+            @handle(GetNodeName)
+            async def handle_get_node_name(self, event: GetNodeName) -> str:
+                return get_node_context().node_name
+
+        total_nodes = {"node1": CustomNode()}
+        builder = RayGraphBuilder(total_nodes)
+        graph = builder.build()
+        graph.start()
+        assert sunray.get(graph.get("node1").send(GetNodeName())) == "node1"
 
 
 def test_convert_ray_resources_to_placement_bundle():
