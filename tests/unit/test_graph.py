@@ -5,6 +5,7 @@ from textwrap import dedent
 from typing import Any
 
 import pytest
+import ray
 import rustworkx as rwx
 import sunray
 
@@ -15,6 +16,8 @@ from ray_graph.graph import (
     RayNode,
     RayNodeActor,
     RayNodeRef,
+    RayResources,
+    _convert_ray_resources_to_placement_bundle,
     get_node_context,
     handle,
 )
@@ -272,3 +275,65 @@ class TestRayGraph:
         graph = builder.build()
         graph.start()
         assert sunray.get(graph.get("node1").send(GetNodeName())) == "node1"
+
+    def test_set_placement(self, init_ray):
+        class GetPlacementName(Event): ...
+
+        class CustomNode(RayNode):
+            @handle(GetPlacementName)
+            def handle_get_placement_name(self, event: GetPlacementName) -> str | None:
+                if pg_id := get_node_context().runtime_context.get_placement_group_id():
+                    return ray.util.placement_group_table()[pg_id]["name"]
+                return None
+
+        total_nodes = {
+            "node": CustomNode(),
+            "leaf1": CustomNode(),
+            "leaf2": CustomNode(),
+        }
+        builder = RayGraphBuilder(total_nodes)
+        builder.set_children("node", ["leaf1", "leaf2"])
+        graph = builder.build()
+        graph.start(
+            placement_rule=(
+                lambda node_name, _: "leaf" if node_name.startswith("leaf") else None,
+                {"leaf": "SPREAD"},
+            )
+        )
+        assert sunray.get(graph.get("leaf1").send(GetPlacementName())) == "leaf"
+        assert sunray.get(graph.get("node").send(GetPlacementName())) is None
+
+    def test_missing_set_placement_strategy(self):
+        class GetPlacementName(Event): ...
+
+        class CustomNode(RayNode):
+            @handle(GetPlacementName)
+            def handle_get_placement_name(self, event: GetPlacementName) -> str | None:
+                if pg_id := get_node_context().runtime_context.get_placement_group_id():
+                    return ray.util.placement_group_table()[pg_id]["name"]
+                return None
+
+        total_nodes = {
+            "node": CustomNode(),
+            "leaf1": CustomNode(),
+            "leaf2": CustomNode(),
+        }
+        builder = RayGraphBuilder(total_nodes)
+        builder.set_children("node", ["leaf1", "leaf2"])
+        graph = builder.build()
+        with pytest.raises(RuntimeError, match=r"Placement \['leaf'\] missing placement strategy"):
+            graph.start(
+                placement_rule=(
+                    lambda node_name, _: "leaf" if node_name.startswith("leaf") else None,
+                    {"leaf1": "SPREAD"},
+                )
+            )
+
+
+def test_convert_ray_resources_to_placement_bundle():
+    ray_resources: RayResources = {"num_cpus": 1, "memory": 1000, "resources": {"disk": 1}}
+    assert _convert_ray_resources_to_placement_bundle(ray_resources) == {
+        "CPU": 1,
+        "memory": 1000,
+        "disk": 1,
+    }
