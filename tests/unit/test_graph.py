@@ -9,8 +9,12 @@ import ray
 import rustworkx as rwx
 import sunray
 
+from ray.util.scheduling_strategies import In, NodeLabelSchedulingStrategy
+
 from ray_graph.event import Event
 from ray_graph.graph import (
+    ActorRemoteOptions,
+    PlacementWarning,
     RayGraphBuilder,
     RayGraphRef,
     RayNode,
@@ -325,6 +329,40 @@ class TestRayGraph:
             graph.start(
                 placement_rule=(
                     lambda node_name, _: "leaf" if node_name.startswith("leaf") else None,
+                    {"leaf1": "SPREAD"},
+                )
+            )
+
+    def test_warning_placement_strategy(self):
+        class GetPlacementName(Event): ...
+
+        class CustomNode(RayNode):
+            @handle(GetPlacementName)
+            def handle_get_placement_name(self, event: GetPlacementName) -> str | None:
+                if pg_id := get_node_context().runtime_context.get_placement_group_id():
+                    return ray.util.placement_group_table()[pg_id]["name"]
+                return None
+
+            def actor_options(self) -> ActorRemoteOptions:
+                return {
+                    "num_cpus": 1,
+                    "scheduling_strategy": NodeLabelSchedulingStrategy(
+                        {}, soft={"region": In("us")}
+                    ),
+                }
+
+        total_nodes = {
+            "node": CustomNode(),
+            "leaf1": CustomNode(),
+            "leaf2": CustomNode(),
+        }
+        builder = RayGraphBuilder(total_nodes)
+        builder.set_children("node", ["leaf1", "leaf2"])
+        graph = builder.build()
+        with pytest.warns(PlacementWarning):
+            graph.start(
+                placement_rule=(
+                    lambda node_name, _: "leaf1" if node_name.startswith("leaf") else None,
                     {"leaf1": "SPREAD"},
                 )
             )
