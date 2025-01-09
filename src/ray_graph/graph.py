@@ -472,6 +472,7 @@ class RayGraph:  # pragma: no cover
     def graphviz_draw(
         self,
         node_attr_fn: Callable[[RayNodeRef], dict[str, str]] | None = None,
+        edge_attr: dict[str, str] | None = None,
         graph_attr: dict[str, str] | None = None,
         *,
         image_type: Literal[
@@ -521,6 +522,7 @@ class RayGraph:  # pragma: no cover
     def graphviz_draw(
         self,
         node_attr_fn: Callable[[RayNodeRef], dict[str, str]] | None = None,
+        edge_attr: dict[str, str] | None = None,
         graph_attr: dict[str, str] | None = None,
         *,
         image_type: Literal[
@@ -569,6 +571,7 @@ class RayGraph:  # pragma: no cover
     def graphviz_draw(
         self,
         node_attr_fn: Callable[[RayNodeRef], dict[str, str]] | None = None,
+        edge_attr: dict[str, str] | None = None,
         graph_attr: dict[str, str] | None = None,
         *,
         filename: str | None = None,
@@ -620,6 +623,9 @@ class RayGraph:  # pragma: no cover
             a dictionary of Graphviz node attributes to be associated with the node
             in the visualization. The key and value of this dictionary **must** be
             a string.
+        :param edge_attr_fn: An optional dictionary of Graphviz edge attributes to
+            be associated with the edge in the visualization file. The key and value
+            of this dictionary must be a string.
         :param dict graph_attr: An optional dictionary that specifies any Graphviz
             graph attributes for the visualization. The key and value of this
             dictionary must be a string.
@@ -652,10 +658,20 @@ class RayGraph:  # pragma: no cover
             path specified in ``filename``
         :rtype: PIL.Image
         """
-        node_attr_fn = node_attr_fn or (lambda n: {"label": n.name})
+        node_attr_fn = node_attr_fn or (
+            lambda n: {
+                "label": n.name,
+                "shape": "box",
+                "style": '"rounded,filled"',
+                "fillcolor": '"#E3F2FD"',
+                "fontname": "Arial",
+                "fontsize": "12",
+            }
+        )
         return graphviz_draw(
             self._graph_ref._dag,
             node_attr_fn=node_attr_fn,
+            edge_attr_fn=lambda _: edge_attr or {},
             graph_attr=graph_attr,
             filename=filename,
             image_type=image_type,
