@@ -159,7 +159,7 @@ class RayNode(metaclass=_RayNodeMeta):  # pragma: no cover
 
     _event_handlers: Mapping[type[Event], _EventHandler[Event]]
 
-    def remote_init(self) -> None:
+    def remote_init(self) -> Any:
         """Initialize the node in ray cluster."""
 
     def labels(self) -> Mapping[str, str]:
@@ -173,6 +173,9 @@ class RayNode(metaclass=_RayNodeMeta):  # pragma: no cover
 
 class RayAsyncNode(RayNode):
     """The base async RayNode."""
+
+    async def remote_init(self) -> Any:
+        """Async initialize the node in ray cluster."""
 
 
 class RayNodeActor(sunray.ActorMixin):
@@ -208,6 +211,14 @@ class RayNodeActor(sunray.ActorMixin):
 
 class RayAsyncNodeActor(RayNodeActor):  # pragma: no cover
     """The async version actor class for RayGraph nodes."""
+
+    ray_node: RayAsyncNode
+
+    @sunray.remote_method
+    async def remote_init(self) -> str:
+        """Invoke ray_node remote init method."""
+        await self.ray_node.remote_init()
+        return self.name
 
     @sunray.remote_method
     async def handle(self, event: Event[_Rsp_co]) -> _Rsp_co:
