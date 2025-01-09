@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Generator
     from typing import Any, TypeAlias
 
-    from ray_graph.graph import ActorRemoteOptions
+    from ray_graph.graph import ActorRemoteOptions, RayGraph
 
 Epoch: TypeAlias = int
 EPOCH_MANAGER_NAME = "EpochManager"
@@ -53,8 +53,16 @@ class EpochManagerNodeActor(RayAsyncNodeActor):  # pragma: no cover
             yield await self.ray_node.queue.get()
 
 
-def epochs() -> Generator[Epoch, None, None]:  # pragma: no cover
+def epochs(graph: RayGraph) -> Generator[Epoch, None, None]:  # pragma: no cover
     """Get the epoch from EpochManager."""
     actor = sunray.get_actor[EpochManagerNodeActor](EPOCH_MANAGER_NAME)
     for epoch_ref in actor.methods.epochs.remote():
-        yield sunray.get(epoch_ref)
+        epoch = sunray.get(epoch_ref)
+        if epoch != 0:
+            # take previous epoch snapshot
+            previous_epoch = epoch - 1
+            nodes = graph.filter(lambda node: node.name != EPOCH_MANAGER_NAME)
+            sunray.get(
+                [node._actor.methods.take_snapshot.remote(previous_epoch) for node in nodes]
+            )
+        yield epoch

@@ -30,7 +30,8 @@ if TYPE_CHECKING:
     from sunray._internal.core import RuntimeContext
     from sunray._internal.typing import RuntimeEnv, SchedulingStrategy
 
-    from ray_graph.event import Event, _Rsp_co
+    from .epoch import Epoch
+    from .event import Event, _Rsp_co
 
 
 NodeName: TypeAlias = str
@@ -170,6 +171,12 @@ class RayNode(metaclass=_RayNodeMeta):  # pragma: no cover
         """Declare the ray actor remote options."""
         return {"num_cpus": 1}
 
+    def take_snapshot(self, epoch: Epoch) -> None:
+        """Take current epoch snapshot."""
+
+    def recovery_from_snapshot(self, epoch: Epoch) -> None:
+        """Recovery node from the given epoch snapshot."""
+
 
 class RayAsyncNode(RayNode):
     """The base async RayNode."""
@@ -207,6 +214,16 @@ class RayNodeActor(sunray.ActorMixin):
             return event_handler.handler_func(self.ray_node, event)  # type: ignore
 
         raise ValueError(f"no handler for event {event_type}")
+
+    @sunray.remote_method
+    def take_snapshot(self, epoch: Epoch) -> None:  # pragma: no cover
+        """Take current epoch snapshot."""
+        self.ray_node.take_snapshot(epoch)
+
+    @sunray.remote_method
+    def recovery_from_snapshot(self, epoch: Epoch) -> None:  # pragma: no cover
+        """Recovery node from the given epoch snapshot."""
+        self.ray_node.recovery_from_snapshot(epoch)
 
 
 class RayAsyncNodeActor(RayNodeActor):  # pragma: no cover

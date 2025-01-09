@@ -13,6 +13,7 @@ import sunray
 
 from ray.util.scheduling_strategies import In, NodeLabelSchedulingStrategy
 
+from ray_graph.epoch import EPOCH_MANAGER_NAME, EpochManagerNode, NextEpochEvent, epochs
 from ray_graph.event import Event
 from ray_graph.graph import (
     ActorRemoteOptions,
@@ -416,6 +417,39 @@ class TestRayGraph:
         graph = builder.build()
         graph.start()
         assert sunray.get(graph.get("node1").send(GetQueue())) == 1
+
+    def test_take_snapshot(self, init_ray):
+        class GetSnapshot(Event[str]): ...
+
+        class CustomNode(RayNode):
+            def __init__(self, id) -> None:
+                self.id = id
+
+            def take_snapshot(self, epoch: int) -> None:
+                self.snapshot = f"epoch-{self.id}-{epoch}"
+
+            @handle(GetSnapshot)
+            def get_snapshot(self, event: GetSnapshot) -> str:
+                return self.snapshot
+
+        graph = RayGraphBuilder(
+            {
+                "node1": CustomNode(1),
+                "node2": CustomNode(2),
+                EPOCH_MANAGER_NAME: EpochManagerNode(),
+            }
+        ).build()
+        graph.start()
+
+        generator = epochs(graph)
+        # skip epoch 0
+        next(generator)
+        # start epoch 1
+        sunray.get(graph.get(EPOCH_MANAGER_NAME).send(NextEpochEvent()))
+        next(generator)
+        # will take epoch 0 snapshot
+        assert sunray.get(graph.get("node1").send(GetSnapshot())) == "epoch-1-0"
+        assert sunray.get(graph.get("node2").send(GetSnapshot())) == "epoch-2-0"
 
 
 def test_convert_ray_resources_to_placement_bundle():
