@@ -7,7 +7,7 @@ import warnings
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Generic, Literal, overload
+from typing import TYPE_CHECKING, Any, Generic, Literal, cast, overload
 
 import rustworkx as rwx
 import sunray
@@ -30,7 +30,8 @@ if TYPE_CHECKING:
     from sunray._internal.core import RuntimeContext
     from sunray._internal.typing import RuntimeEnv, SchedulingStrategy
 
-    from ray_graph.event import Event, _Rsp_co
+    from .epoch import Epoch
+    from .event import Event, _Rsp_co
 
 
 NodeName: TypeAlias = str
@@ -170,12 +171,21 @@ class RayNode(metaclass=_RayNodeMeta):  # pragma: no cover
         """Declare the ray actor remote options."""
         return {"num_cpus": 1}
 
+    def take_snapshot(self, epoch: Epoch) -> None:
+        """Take current epoch snapshot."""
+
+    def recovery_from_snapshot(self, epoch: Epoch) -> Any:
+        """Recovery node from the given epoch snapshot."""
+
 
 class RayAsyncNode(RayNode):
     """The base async RayNode."""
 
     async def remote_init(self) -> Any:
         """Async initialize the node in ray cluster."""
+
+    async def recovery_from_snapshot(self, epoch: Epoch) -> Any:
+        """Recovery node from the given epoch snapshot."""
 
 
 class RayNodeActor(sunray.ActorMixin):
@@ -208,6 +218,17 @@ class RayNodeActor(sunray.ActorMixin):
 
         raise ValueError(f"no handler for event {event_type}")
 
+    @sunray.remote_method
+    def take_snapshot(self, epoch: Epoch) -> None:  # pragma: no cover
+        """Take current epoch snapshot."""
+        self.ray_node.take_snapshot(epoch)
+
+    @sunray.remote_method
+    def recovery_from_snapshot(self, epoch: Epoch) -> str:  # pragma: no cover
+        """Recovery node from the given epoch snapshot."""
+        self.ray_node.recovery_from_snapshot(epoch)
+        return self.name
+
 
 class RayAsyncNodeActor(RayNodeActor):  # pragma: no cover
     """The async version actor class for RayGraph nodes."""
@@ -229,6 +250,12 @@ class RayAsyncNodeActor(RayNodeActor):  # pragma: no cover
             return await event_handler.handler_func(self.ray_node, event)  # type: ignore
 
         raise ValueError(f"no handler for event {event_type}")
+
+    @sunray.remote_method
+    async def recovery_from_snapshot(self, epoch: Epoch) -> str:
+        """Recovery node from the given epoch snapshot."""
+        await self.ray_node.recovery_from_snapshot(epoch)
+        return self.name
 
 
 class RayNodeRef:
@@ -741,7 +768,26 @@ class _WaitNode(TypedDict):
 def _wait_node_init(
     node_actors: Mapping[NodeName, _WaitNode], *, disable_rich: bool = False
 ):  # pragma: no cover
-    not_readies = [item["actor"].methods.remote_init.remote() for _, item in node_actors.items()]
+    action = None
+    from .epoch import EPOCH_MANAGER_NAME, EpochManagerNode
+
+    if epoch_manager := node_actors.get(EPOCH_MANAGER_NAME):
+        epoch_manager_node = cast(EpochManagerNode, epoch_manager["node"])
+        if epoch_manager_node.current_epoch is not None:
+            # recover all nodes at the given epoch snapshot
+            action = f"Recovery epoch({epoch_manager_node.current_epoch}) {{task.description}}"
+            not_readies = [
+                item["actor"].methods.recovery_from_snapshot.remote(
+                    epoch_manager_node.current_epoch
+                )
+                for _, item in node_actors.items()
+            ]
+    if action is None:
+        action = "Init {{task.description}}"
+        not_readies = [
+            item["actor"].methods.remote_init.remote() for _, item in node_actors.items()
+        ]
+
     if not _rich_enabled or disable_rich:
         sunray.wait(not_readies, num_returns=len(not_readies))
 
@@ -753,12 +799,12 @@ def _wait_node_init(
     class_node_counter = Counter(node_to_classes.values())
 
     with Progress(
-        TextColumn("Init {task.description}"),
+        TextColumn(action),
         BarColumn(),
         MofNCompleteColumn(),
     ) as progress:
         tasks = {
-            class_name: progress.add_task(f"[bold yellow]{class_name}", total=total)
+            class_name: progress.add_task(f"[bold yellow]{class_name}[/]", total=total)
             for class_name, total in class_node_counter.items()
         }
 

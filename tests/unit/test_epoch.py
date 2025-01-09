@@ -30,7 +30,7 @@ def test_handle_epoch_event(init_ray):
         {"node1": CustomNode(), EPOCH_MANAGER_NAME: EpochManagerNode()}
     ).build()
     graph.start()
-    epoch_generator = epochs()
+    epoch_generator = epochs(graph)
     assert next(epoch_generator) == 0
     sunray.get(graph.get("node1").send(CustomEvent()))
     assert next(epoch_generator) == 1
