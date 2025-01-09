@@ -1,6 +1,8 @@
 # ruff: noqa: ARG002
 from __future__ import annotations
 
+import asyncio
+
 from textwrap import dedent
 from typing import Any
 
@@ -396,6 +398,24 @@ class TestRayGraph:
         graph = builder.build()
         graph.start()
         assert sunray.get(graph.get("node1").send(GetNodeName())) == "node1"
+
+    def test_async_node_actor_remote_init(self, init_ray):
+        class GetQueue(Event[int]): ...
+
+        class CustomNode(RayAsyncNode):
+            async def remote_init(self) -> None:
+                self.queue: asyncio.Queue[int] = asyncio.Queue()
+                await self.queue.put(1)
+
+            @handle(GetQueue)
+            async def handle_get_node_name(self, event: GetQueue) -> int:
+                return await self.queue.get()
+
+        total_nodes = {"node1": CustomNode()}
+        builder = RayGraphBuilder(total_nodes)
+        graph = builder.build()
+        graph.start()
+        assert sunray.get(graph.get("node1").send(GetQueue())) == 1
 
 
 def test_convert_ray_resources_to_placement_bundle():
