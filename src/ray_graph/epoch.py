@@ -28,13 +28,25 @@ class NextEpochEvent(Event[None]):
 class EpochManagerNode(RayAsyncNode):  # pragma: no cover
     """The epoch manager node."""
 
+    queue: asyncio.Queue[Epoch]
+
+    def __init__(self, epoch: Epoch | None = None) -> None:
+        """If the epoch is not None, it will trigger all nodes to recover from that epoch."""
+        self.current_epoch = epoch
+
     async def remote_init(self) -> Any:
-        self.queue: asyncio.Queue[Epoch] = asyncio.Queue(maxsize=1)
+        self.queue = asyncio.Queue(maxsize=1)
         self.current_epoch = 0
+        await self.queue.put(self.current_epoch)
+
+    async def recovery_from_snapshot(self, epoch: int) -> None:
+        self.queue = asyncio.Queue(maxsize=1)
+        self.current_epoch = epoch + 1
         await self.queue.put(self.current_epoch)
 
     @handle(NextEpochEvent)
     async def handle_next_epoch(self, _event: NextEpochEvent) -> None:
+        assert self.current_epoch is not None
         self.current_epoch += 1
         await self.queue.put(self.current_epoch)
 

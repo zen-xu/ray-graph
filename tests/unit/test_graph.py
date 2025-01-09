@@ -451,6 +451,34 @@ class TestRayGraph:
         assert sunray.get(graph.get("node1").send(GetSnapshot())) == "epoch-1-0"
         assert sunray.get(graph.get("node2").send(GetSnapshot())) == "epoch-2-0"
 
+    def test_recovery(self, init_ray):
+        class GetEpoch(Event[str]): ...
+
+        class CustomNode(RayNode):
+            def __init__(self, id) -> None:
+                self.id = id
+
+            def recovery_from_snapshot(self, epoch: int) -> Any:
+                self.epoch = epoch
+
+            @handle(GetEpoch)
+            def handle_get_epoch(self, event: GetEpoch) -> str:
+                return f"epoch-{self.id}-{self.epoch}"
+
+        graph = RayGraphBuilder(
+            {
+                "node1": CustomNode(1),
+                "node2": CustomNode(2),
+                EPOCH_MANAGER_NAME: EpochManagerNode(3),
+            }
+        ).build()
+        graph.start()
+
+        assert sunray.get(graph.get("node1").send(GetEpoch())) == "epoch-1-3"
+        assert sunray.get(graph.get("node2").send(GetEpoch())) == "epoch-2-3"
+        epoch_generator = epochs(graph)
+        assert next(epoch_generator) == 4
+
 
 def test_convert_ray_resources_to_placement_bundle():
     ray_resources: RayResources = {"num_cpus": 1, "memory": 1000, "resources": {"disk": 1}}
