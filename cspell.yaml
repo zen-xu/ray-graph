@@ -10,10 +10,13 @@ words:
   - cmap
   - cmapx
   - cpus
+  - fontname
+  - fontsize
   - getproctitle
   - hpgl
   - neato
   - pyupgrade
+  - reinit
   - rtype
   - sfdp
   - sunray

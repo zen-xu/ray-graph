@@ -658,7 +658,16 @@ class RayGraph:  # pragma: no cover
             path specified in ``filename``
         :rtype: PIL.Image
         """
-        node_attr_fn = node_attr_fn or (lambda n: {"label": n.name})
+        node_attr_fn = node_attr_fn or (
+            lambda n: {
+                "label": n.name,
+                "shape": "box",
+                "style": '"rounded,filled"',
+                "fillcolor": '"#E3F2FD"',
+                "fontname": "Arial",
+                "fontsize": "12",
+            }
+        )
         return graphviz_draw(
             self._graph_ref._dag,
             node_attr_fn=node_attr_fn,
