@@ -1,5 +1,9 @@
 __version__ = "0.1.0b0"
 
+from .epoch import EPOCH_MANAGER_NAME as EPOCH_MANAGER_NAME
+from .epoch import EpochManagerNode as EpochManagerNode
+from .epoch import NextEpochEvent as NextEpochEvent
+from .epoch import epochs as epochs
 from .event import Event as Event
 from .event import field as field
 from .graph import ActorRemoteOptions as ActorRemoteOptions

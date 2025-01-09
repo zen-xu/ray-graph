@@ -320,6 +320,16 @@ class RayGraph:  # pragma: no cover
         **_future_opts,
     ) -> None:
         """Create all ray node actors and start these actors."""
+
+        def determine_actor_class(node) -> type[RayNodeActor] | type[RayAsyncNodeActor]:
+            from .epoch import EpochManagerNode, EpochManagerNodeActor
+
+            if isinstance(node, EpochManagerNode):
+                return EpochManagerNodeActor
+            if isinstance(node, RayAsyncNode):
+                return RayAsyncNodeActor
+            return RayNodeActor
+
         if not self._node_actors:
             graph_obj_ref = sunray.put(self._graph_ref)
             if placement_rule:
@@ -370,12 +380,10 @@ class RayGraph:  # pragma: no cover
                                     node_name
                                 ),
                             )
-                        actor_class = (
-                            RayAsyncNodeActor if isinstance(node, RayAsyncNode) else RayNodeActor
-                        )
                         yield (
                             node_name,
-                            actor_class.new_actor()
+                            determine_actor_class(node)
+                            .new_actor()
                             .options(**options)
                             .remote(node_name, node, graph_obj_ref),
                         )
@@ -383,7 +391,7 @@ class RayGraph:  # pragma: no cover
                 self._node_actors = dict(create_node_actors())
             else:
                 self._node_actors = {
-                    name: (RayAsyncNodeActor if isinstance(node, RayAsyncNode) else RayNodeActor)
+                    name: determine_actor_class(node)
                     .new_actor()
                     .options(name=name, **node.actor_options())
                     .remote(name, node, graph_obj_ref)
