@@ -25,7 +25,7 @@ class NextEpochEvent(Event[None]):
     """Generate next epoch."""
 
 
-class EpochManagerNode(RayAsyncNode):
+class EpochManagerNode(RayAsyncNode):  # pragma: no cover
     """The epoch manager node."""
 
     async def remote_init(self) -> Any:
@@ -42,7 +42,7 @@ class EpochManagerNode(RayAsyncNode):
         return {"num_cpus": 0.1}
 
 
-class EpochManagerNodeActor(RayAsyncNodeActor):
+class EpochManagerNodeActor(RayAsyncNodeActor):  # pragma: no cover
     """The epoch manager node actor."""
 
     ray_node: EpochManagerNode
@@ -53,7 +53,7 @@ class EpochManagerNodeActor(RayAsyncNodeActor):
             yield await self.ray_node.queue.get()
 
 
-def epochs() -> Generator[Epoch, None, None]:
+def epochs() -> Generator[Epoch, None, None]:  # pragma: no cover
     """Get the epoch from EpochManager."""
     actor = sunray.get_actor[EpochManagerNodeActor](EPOCH_MANAGER_NAME)
     for epoch_ref in actor.methods.epochs.remote():
