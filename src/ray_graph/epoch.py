@@ -77,4 +77,11 @@ def epochs(graph: RayGraph) -> Generator[Epoch, None, None]:  # pragma: no cover
             sunray.get(
                 [node._actor.methods.take_snapshot.remote(previous_epoch) for node in nodes]
             )
-        yield epoch
+        try:
+            from opentelemetry.trace import get_tracer
+
+            tracer = get_tracer(__name__)
+            with tracer.start_as_current_span("New Epoch", attributes={"ray_graph.epoch": epoch}):
+                yield epoch
+        except ImportError:
+            yield epoch
