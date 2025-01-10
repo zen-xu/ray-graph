@@ -25,6 +25,7 @@ if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Mapping
     from typing import TypeAlias
 
+    from opentelemetry.trace import Span
     from PIL.Image import Image
     from ray.util.placement_group import PlacementGroup
     from sunray._internal.core import RuntimeContext
@@ -188,12 +189,20 @@ class RayAsyncNode(RayNode):
         """Recovery node from the given epoch snapshot."""
 
 
+def _set_node_span_attributes(node: RayNodeActor, span: Span):  # pragma: no cover
+    span.set_attribute("ray_graph.node.name", node.name)
+    span.set_attribute("ray_graph.node.class", node.ray_node.__class__.__name__)
+    for k, v in node.labels.items():
+        span.set_attribute(f"ray_graph.node.label.{k}", v)
+
+
 class RayNodeActor(sunray.ActorMixin):
     """The actor class for RayGraph nodes."""
 
     def __init__(self, name: str, ray_node: RayNode, ray_graph: RayGraphRef) -> None:
         self.name = name
         self.ray_node = ray_node
+        self.labels = ray_node.labels()
         self.ray_graph = ray_graph
         from ray_graph import graph
 
@@ -205,13 +214,18 @@ class RayNodeActor(sunray.ActorMixin):
     @sunray.remote_method
     def remote_init(self) -> str:
         """Invoke ray_node remote init method."""
+        span = get_current_span()
+        _set_node_span_attributes(self, span)
         self.ray_node.remote_init()
         return self.name
 
     @sunray.remote_method
     def handle(self, event: Event[_Rsp_co]) -> _Rsp_co:
         """Handle the given event."""
+        span = get_current_span()
+        _set_node_span_attributes(self, span)
         event_type = type(event)
+        span.set_attribute("ray_graph.event", event_type.__name__)
         event_handler = self.ray_node._event_handlers.get(event_type)
         if event_handler:
             return event_handler.handler_func(self.ray_node, event)  # type: ignore
@@ -221,11 +235,15 @@ class RayNodeActor(sunray.ActorMixin):
     @sunray.remote_method
     def take_snapshot(self, epoch: Epoch) -> None:  # pragma: no cover
         """Take current epoch snapshot."""
+        span = get_current_span()
+        _set_node_span_attributes(self, span)
         self.ray_node.take_snapshot(epoch)
 
     @sunray.remote_method
     def recovery_from_snapshot(self, epoch: Epoch) -> str:  # pragma: no cover
         """Recovery node from the given epoch snapshot."""
+        span = get_current_span()
+        _set_node_span_attributes(self, span)
         self.ray_node.recovery_from_snapshot(epoch)
         return self.name
 
@@ -238,13 +256,18 @@ class RayAsyncNodeActor(RayNodeActor):  # pragma: no cover
     @sunray.remote_method
     async def remote_init(self) -> str:
         """Invoke ray_node remote init method."""
+        span = get_current_span()
+        _set_node_span_attributes(self, span)
         await self.ray_node.remote_init()
         return self.name
 
     @sunray.remote_method
     async def handle(self, event: Event[_Rsp_co]) -> _Rsp_co:
         """Handle the given event."""
+        span = get_current_span()
+        _set_node_span_attributes(self, span)
         event_type = type(event)
+        span.set_attribute("ray_graph.event", event_type.__name__)
         event_handler = self.ray_node._event_handlers.get(event_type)
         if event_handler:
             return await event_handler.handler_func(self.ray_node, event)  # type: ignore
@@ -254,6 +277,8 @@ class RayAsyncNodeActor(RayNodeActor):  # pragma: no cover
     @sunray.remote_method
     async def recovery_from_snapshot(self, epoch: Epoch) -> str:
         """Recovery node from the given epoch snapshot."""
+        span = get_current_span()
+        _set_node_span_attributes(self, span)
         await self.ray_node.recovery_from_snapshot(epoch)
         return self.name
 
@@ -828,3 +853,30 @@ def _wait_node_init(
             readies, not_readies = sunray.wait(not_readies)
             for node_name in sunray.get(readies):
                 progress.update(tasks[node_to_classes[node_name]], advance=1)
+
+
+def get_current_span() -> Span:  # pragma: no cover
+    """Retrieve the current span."""
+    try:
+        from opentelemetry import trace
+
+        return trace.get_current_span()
+    except ImportError:
+
+        class DummySpan:
+            def end(self, end_time=None): ...
+            def get_span_context(self): ...
+            def set_attributes(self, attributes): ...
+            def set_attribute(self, key, value): ...
+            def add_event(self, name, attributes, timestamp): ...
+            def add_link(self, context, attributes): ...
+            def update_name(self, name): ...
+            def is_recording(self): ...
+            def set_status(self, status, description): ...
+            def record_exception(
+                self, exception, attributes=None, timestamp=None, escaped=False
+            ): ...
+            def __enter__(self):
+                return self
+
+        return DummySpan()  # type: ignore
