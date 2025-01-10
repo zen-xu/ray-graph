@@ -21,8 +21,17 @@ dependencies = [
   "rustworkx>=0.15",
 ]
 [project.optional-dependencies]
-rich     = ["rich"]
+rich = ["rich"]
 graphviz = ["pydot", "pillow"]
+tracing = ["opentelemetry-api", "opentelemetry-sdk", "opentelemetry-exporter-otlp"]
+all = [
+  "rich",
+  "pydot",
+  "pillow",
+  "opentelemetry-api",
+  "opentelemetry-sdk",
+  "opentelemetry-exporter-otlp",
+]
 
 [project.urls]
 homepage   = "https://github.com/zen-xu/ray-graph"
@@ -66,10 +75,11 @@ python = "3.11.*"
 python = "3.12.*"
 
 [tool.pixi.environments]
-default = ["py312", "rich", "graphviz"]
-py310   = ["py310", "rich", "graphviz"]
-py311   = ["py311", "rich", "graphviz"]
-py312   = ["py312", "rich", "graphviz"]
+default = ["py312", "all"]
+py310   = ["py310", "rich", "graphviz", "tracing"]
+py311   = ["py311", "rich", "graphviz", "tracing"]
+py312   = ["py312", "rich", "graphviz", "tracing"]
+
 
 # -------------------------------- Ruff --------------------------------
 
