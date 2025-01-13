@@ -74,9 +74,7 @@ def epochs(graph: RayGraph) -> Generator[Epoch, None, None]:  # pragma: no cover
             # take previous epoch snapshot
             previous_epoch = epoch - 1
             nodes = graph.filter(lambda node: node.name != EPOCH_MANAGER_NAME)
-            sunray.get(
-                [node._actor.methods.take_snapshot.remote(previous_epoch) for node in nodes]
-            )
+            sunray.get([node.actor.methods.take_snapshot.remote(previous_epoch) for node in nodes])
         try:
             from opentelemetry.trace import get_tracer
 
