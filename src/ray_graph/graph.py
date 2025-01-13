@@ -291,7 +291,8 @@ class RayNodeRef:
         self._labels = labels or {}
 
     @cached_property
-    def _actor(self) -> sunray.Actor[RayNodeActor]:
+    def actor(self) -> sunray.Actor[RayNodeActor]:
+        """The ray node actor."""
         return sunray.get_actor[RayNodeActor](self.name)
 
     @property
@@ -308,7 +309,7 @@ class RayNodeRef:
         self, event: Event[_Rsp_co] | sunray.ObjectRef[Event[_Rsp_co]], **extra_ray_opts
     ) -> sunray.ObjectRef[_Rsp_co]:
         """Send an event to the node."""
-        return self._actor.methods.handle.options(
+        return self.actor.methods.handle.options(
             name=f"{self.name}.handle[{type(event).__name__}]", **extra_ray_opts
         ).remote(event)
 
