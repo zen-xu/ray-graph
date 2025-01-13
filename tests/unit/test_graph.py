@@ -326,6 +326,18 @@ class TestRayGraph:
         assert sunray.get(graph.get("leaf1").send(GetPlacementName())) == "leaf"
         assert sunray.get(graph.get("node").send(GetPlacementName())) is None
 
+    def test_ray_graph_builder_add_node(self):
+        class CustomNode(RayNode): ...
+
+        total_nodes = {
+            "node": CustomNode(),
+            "leaf1": CustomNode(),
+            "leaf2": CustomNode(),
+        }
+        builder = RayGraphBuilder(total_nodes)
+        builder.add_node("node2", CustomNode())
+        assert "node2" in builder._total_nodes
+
     def test_missing_set_placement_strategy(self):
         class GetPlacementName(Event): ...
 
