@@ -7524,8 +7524,8 @@ packages:
   requires_python: '>=3.9'
 - pypi: .
   name: ray-graph
-  version: 0.2.1
-  sha256: 6b4c7e30bc11a7f64490b83632137f6d9f0c5a81ecb0b52a08e9f2f4729e7e26
+  version: 0.2.2
+  sha256: c1377d21e88922bd0f07c6054b8122eee852235e2f916c0b4a8e5b06385dcda5
   requires_dist:
   - ray[default]>=2.20
   - sunray>=0.10
