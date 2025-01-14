@@ -49,7 +49,6 @@ class TestRayNode:
 
         assert len(CustomNode._event_handlers) == 1
         assert CustomNode._event_handlers.get(CustomEvent) is not None
-        assert not hasattr(CustomNode, "handle_custom_event")
 
     def test_register_duplicate_event_handler(self):
         with pytest.raises(RegisterHandlerError, match="got duplicate event handler for"):

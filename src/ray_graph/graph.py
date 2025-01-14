@@ -108,8 +108,6 @@ class _RayNodeMeta(type):
                             f"<class '{mod}.{qual}'> method {attr_value.handler_func.__name__} can't be async func"  # noqa: E501
                         )
                 event_handlers[attr_value.event_t] = attr_value
-        # remove event handler functions from attrs
-        attrs = {k: v for k, v in attrs.items() if not isinstance(v, _EventHandler)}
         return super().__new__(cls, name, bases, attrs)
 
 
