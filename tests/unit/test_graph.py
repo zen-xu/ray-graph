@@ -47,8 +47,7 @@ class TestRayNode:
             @handle(CustomEvent)
             def handle_custom_event(self, event: CustomEvent) -> Any: ...
 
-        assert len(CustomNode._event_handlers) == 1
-        assert CustomNode._event_handlers.get(CustomEvent) is not None
+        assert getattr(CustomNode.handle_custom_event, "_ray_handler_event") is CustomEvent
 
     def test_register_duplicate_event_handler(self):
         with pytest.raises(RegisterHandlerError, match="got duplicate event handler for"):
@@ -94,6 +93,31 @@ class TestRayNode:
         with pytest.raises(ValueError, match=r"no handler for event .*FakeEvent.*"):
             sunray.get(node_actor.methods.handle.remote(FakeEvent()))
         sunray.kill(node_actor)
+
+    def test_ray_inherit(self, init_local_ray, dummy_graph):
+        class Base(RayNode):
+            def remote_init(self) -> None:
+                self.value = 1
+
+            @handle(CustomEvent)
+            def handle_custom_event(self, event: CustomEvent) -> int:
+                self.value += event.value
+
+                return self.value
+
+        class Child(Base):
+            def remote_init(self) -> None:
+                self.value = 1
+
+            @handle(CustomEvent)
+            def handle_custom_event(self, event: CustomEvent) -> int:
+                self.value += event.value + 1
+
+                return self.value
+
+        node_actor = RayNodeActor.new_actor().remote("", Child(), dummy_graph)
+        sunray.get(node_actor.methods.remote_init.remote())
+        assert sunray.get(node_actor.methods.handle.remote(CustomEvent(value=2))) == 4
 
     def test_ray_node_ref(self, init_ray, dummy_graph):
         class GetProcName(Event[str]): ...
