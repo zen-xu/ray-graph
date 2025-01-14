@@ -829,7 +829,7 @@ def _wait_node_init(
                 for _, item in node_actors.items()
             ]
     if action is None:
-        action = "Init {{task.description}}"
+        action = "Init {task.description}"
         not_readies = [
             item["actor"].methods.remote_init.remote() for _, item in node_actors.items()
         ]
