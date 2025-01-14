@@ -337,6 +337,7 @@ class TestRayGraph:
         builder = RayGraphBuilder(total_nodes)
         builder.add_node("node2", CustomNode())
         assert "node2" in builder._total_nodes
+        assert "node2" in builder._node_name_ids
 
     def test_missing_set_placement_strategy(self):
         class GetPlacementName(Event): ...

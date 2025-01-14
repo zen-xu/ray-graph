@@ -319,15 +319,15 @@ class RayGraphBuilder:
 
     def __init__(self, total_nodes: Mapping[NodeName, RayNode]):
         self._dag: rwx.PyDAG[RayNodeRef, None] = rwx.PyDAG(check_cycle=True)
-        self._total_nodes = dict(total_nodes)
-        self._node_name_ids = {
-            node_name: self._dag.add_node(RayNodeRef(node_name, node.labels()))
-            for node_name, node in total_nodes.items()
-        }
+        self._total_nodes: dict[NodeName, RayNode] = {}
+        self._node_name_ids: dict[NodeName, int] = {}
+        for name, node in total_nodes.items():
+            self.add_node(name, node)
 
     def add_node(self, node_name: NodeName, node: RayNode):
         """Add new ray node."""
         self._total_nodes[node_name] = node
+        self._node_name_ids[node_name] = self._dag.add_node(RayNodeRef(node_name, node.labels()))
 
     def set_parent(self, child: NodeName, parent: NodeName) -> None:
         """Set the parent of the child node."""
