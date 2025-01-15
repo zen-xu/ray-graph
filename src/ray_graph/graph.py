@@ -100,26 +100,22 @@ class _RayNodeMeta(type):
 
         event_handlers = [func for func in attrs.values() if hasattr(func, "_ray_handler_event")]
         met_event = set()
-        mod = attrs["__module__"]
-        qual = attrs.get("__qualname__", "")
         for handler in event_handlers:
             event_t = handler._ray_handler_event
             if event_t in met_event:
-                raise RegisterHandlerError(
-                    f"<class '{mod}.{qual}'> got duplicate event handler for {event_t}"
-                )
+                raise RegisterHandlerError(f"{self} got duplicate event handler for {event_t}")
 
             if self._is_async:  # type: ignore
                 # event_handler must be async func for RayAsyncNode
                 if not inspect.iscoroutinefunction(handler):
                     raise RegisterHandlerError(
-                        f"<class '{mod}.{qual}'> method '{handler.__name__}' must be async func"
+                        f"{self} method '{handler.__name__}' must be async func"
                     )
             else:
                 # event_handler must not be async func for RayNode
                 if inspect.iscoroutinefunction(handler):
                     raise RegisterHandlerError(
-                        f"<class '{mod}.{qual}'> method {handler.__name__} can't be async func"
+                        f"{self} method {handler.__name__} can't be async func"
                     )
             met_event.add(event_t)
         return self
