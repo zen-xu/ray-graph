@@ -23,7 +23,7 @@ _rich_enabled = importlib.util.find_spec("rich") is not None
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Mapping
-    from typing import TypeAlias
+    from typing import ClassVar, TypeAlias
 
     from opentelemetry.trace import Span
     from PIL.Image import Image
@@ -93,9 +93,10 @@ class RegisterHandlerError(Exception):
 
 class _RayNodeMeta(type):
     def __new__(cls, name, bases, attrs):
+        self = super().__new__(cls, name, bases, attrs)
+
         event_handlers = [func for func in attrs.values() if hasattr(func, "_ray_handler_event")]
         met_event = set()
-
         mod = attrs["__module__"]
         qual = attrs.get("__qualname__", "")
         for handler in event_handlers:
@@ -105,7 +106,7 @@ class _RayNodeMeta(type):
                     f"<class '{mod}.{qual}'> got duplicate event handler for {event_t}"
                 )
 
-            if RayAsyncNode in bases:
+            if self._is_async:  # type: ignore
                 # event_handler must be async func for RayAsyncNode
                 if not inspect.iscoroutinefunction(handler):
                     raise RegisterHandlerError(
@@ -118,7 +119,7 @@ class _RayNodeMeta(type):
                         f"<class '{mod}.{qual}'> method {handler.__name__} can't be async func"
                     )
             met_event.add(event_t)
-        return super().__new__(cls, name, bases, attrs)
+        return self
 
 
 def get_node_context() -> RayNodeContext:  # pragma: no cover
@@ -167,6 +168,8 @@ class ActorRemoteOptions(TypedDict, total=False):
 class RayNode(metaclass=_RayNodeMeta):  # pragma: no cover
     """The base class for all RayGraph nodes."""
 
+    _is_async: ClassVar[bool] = False
+
     def remote_init(self) -> Any:
         """Initialize the node in ray cluster."""
 
@@ -187,6 +190,8 @@ class RayNode(metaclass=_RayNodeMeta):  # pragma: no cover
 
 class RayAsyncNode(RayNode):
     """The base async RayNode."""
+
+    _is_async: ClassVar[bool] = True
 
     async def remote_init(self) -> Any:
         """Async initialize the node in ray cluster."""
