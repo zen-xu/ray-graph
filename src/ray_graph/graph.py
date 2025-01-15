@@ -15,7 +15,7 @@ import sunray
 from ray.util.placement_group import placement_group
 from ray.util.scheduling_strategies import PlacementGroupSchedulingStrategy
 from rustworkx.visualization import graphviz_draw
-from typing_extensions import TypedDict, TypeVar
+from typing_extensions import TypedDict, TypeVar, dataclass_transform
 
 
 _rich_enabled = importlib.util.find_spec("rich") is not None
@@ -91,9 +91,12 @@ class RegisterHandlerError(Exception):
     """Raise Error when register handler failed."""
 
 
+@dataclass_transform(kw_only_default=True, eq_default=False)
 class _RayNodeMeta(type):
     def __new__(cls, name, bases, attrs):
-        self = super().__new__(cls, name, bases, attrs)
+        self = dataclass(kw_only=True, repr=False, eq=False)(
+            super().__new__(cls, name, bases, attrs)
+        )
 
         event_handlers = [func for func in attrs.values() if hasattr(func, "_ray_handler_event")]
         met_event = set()

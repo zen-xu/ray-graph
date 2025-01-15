@@ -165,6 +165,15 @@ class TestRayNode:
         remote_ctx["graph"].get("node1")
         assert remote_ctx["node_name"] == node_name
 
+    def test_dataclass_style(self):
+        class Node(RayNode):
+            a: int
+            b: str
+
+        node = Node(a=1, b="a")
+        assert node.a == 1
+        assert node.b == "a"
+
 
 class TestRayGraph:
     def test_set_relationships(self):
