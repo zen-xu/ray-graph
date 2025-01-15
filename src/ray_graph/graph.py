@@ -65,11 +65,20 @@ class _EventHandler(Generic[_Event_co]):
     def __init__(self, event_t: type[_Event_co]) -> None:
         self.event_t = event_t
 
+    @overload
     def __call__(
         self: _EventHandler[Event[_Rsp_co]],
-        handler_func: Callable[[_RayNode_co, _Event_co], _Rsp_co | Awaitable[_Rsp_co]],
-    ) -> Callable[[_RayNode_co, _Event_co], _Rsp_co | Awaitable[_Rsp_co]]:
-        handler_func._ray_handler_event = self.event_t  # type: ignore[attr-defined]
+        handler_func: Callable[[_RayNode_co, _Event_co], Awaitable[_Rsp_co]],
+    ) -> Callable[[_RayNode_co, _Event_co], Awaitable[_Rsp_co]]: ...
+
+    @overload
+    def __call__(
+        self: _EventHandler[Event[_Rsp_co]],
+        handler_func: Callable[[_RayNode_co, _Event_co], _Rsp_co],
+    ) -> Callable[[_RayNode_co, _Event_co], _Rsp_co]: ...
+
+    def __call__(self, handler_func):
+        handler_func._ray_handler_event = self.event_t
         return handler_func
 
 
