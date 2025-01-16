@@ -5,7 +5,7 @@ import inspect
 import warnings
 
 from collections import Counter, defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, Generic, Literal, cast, overload
 
@@ -169,16 +169,13 @@ class RayNode(metaclass=_RayNodeMeta):  # pragma: no cover
 
     _is_async: ClassVar[bool] = False
 
+    labels: Mapping[str, str] = field(default_factory=dict)
+    actor_options: ActorRemoteOptions = field(
+        default_factory=lambda: ActorRemoteOptions(num_cpus=1)
+    )
+
     def remote_init(self) -> Any:
         """Initialize the node in ray cluster."""
-
-    def labels(self) -> Mapping[str, str]:
-        """The labels of the node, which will inject into its node reference."""
-        return {}
-
-    def actor_options(self) -> ActorRemoteOptions:
-        """Declare the ray actor remote options."""
-        return {"num_cpus": 1}
 
     def take_snapshot(self, epoch: Epoch) -> None:
         """Take current epoch snapshot."""
@@ -212,7 +209,7 @@ class RayNodeActor(sunray.ActorMixin):
     def __init__(self, name: str, ray_node: RayNode, ray_graph: RayGraphRef) -> None:
         self.name = name
         self.ray_node = ray_node
-        self.labels = ray_node.labels()
+        self.labels = ray_node.labels
         self.ray_graph = ray_graph
         self.handlers = {
             getattr(self.ray_node, attr)._ray_handler_event: getattr(self.ray_node, attr)
@@ -342,7 +339,7 @@ class RayGraphBuilder:
     def add_node(self, node_name: NodeName, node: RayNode):
         """Add new ray node."""
         self._total_nodes[node_name] = node
-        self._node_name_ids[node_name] = self._dag.add_node(RayNodeRef(node_name, node.labels()))
+        self._node_name_ids[node_name] = self._dag.add_node(RayNodeRef(node_name, node.labels))
 
     def set_parent(self, child: NodeName, parent: NodeName) -> None:
         """Set the parent of the child node."""
@@ -424,7 +421,7 @@ class RayGraph:  # pragma: no cover
                     placement_name: placement_group(
                         [
                             _convert_ray_resources_to_placement_bundle(
-                                self._total_nodes[node].actor_options()
+                                self._total_nodes[node].actor_options
                             )
                             for node in nodes
                         ],
@@ -438,7 +435,7 @@ class RayGraph:  # pragma: no cover
 
                 def create_node_actors():
                     for node_name, node in self._total_nodes.items():
-                        options = {"name": node_name, **node.actor_options()}
+                        options = {"name": node_name, **node.actor_options}
                         if placement_name := node_placement_names.get(node_name):
                             pg = placement_groups[placement_name]
                             if "scheduling_strategy" in options:
@@ -465,7 +462,7 @@ class RayGraph:  # pragma: no cover
                 self._node_actors = {
                     name: determine_actor_class(node)
                     .new_actor()
-                    .options(name=name, **node.actor_options())
+                    .options(name=name, **node.actor_options)
                     .remote(name, node, graph_obj_ref)
                     for name, node in self._total_nodes.items()
                 }
