@@ -91,7 +91,7 @@ class RegisterHandlerError(Exception):
     """Raise Error when register handler failed."""
 
 
-@dataclass_transform(kw_only_default=True, eq_default=False)
+@dataclass_transform(kw_only_default=True, eq_default=False, field_specifiers=(field,))
 class _RayNodeMeta(type):
     def __new__(cls, name, bases, attrs):
         self = dataclass(kw_only=True, repr=False, eq=False)(
