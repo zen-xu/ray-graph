@@ -407,18 +407,14 @@ class TestRayGraph:
                     return ray.util.placement_group_table()[pg_id]["name"]
                 return None
 
-            def actor_options(self) -> ActorRemoteOptions:
-                return {
-                    "num_cpus": 1,
-                    "scheduling_strategy": NodeLabelSchedulingStrategy(
-                        {}, soft={"region": In("us")}
-                    ),
-                }
-
+        actor_options: ActorRemoteOptions = {
+            "num_cpus": 1,
+            "scheduling_strategy": NodeLabelSchedulingStrategy({}, soft={"region": In("us")}),
+        }
         total_nodes = {
-            "node": CustomNode(),
-            "leaf1": CustomNode(),
-            "leaf2": CustomNode(),
+            "node": CustomNode(actor_options=actor_options),
+            "leaf1": CustomNode(actor_options=actor_options),
+            "leaf2": CustomNode(actor_options=actor_options),
         }
         builder = RayGraphBuilder(total_nodes)
         builder.set_children("node", ["leaf1", "leaf2"])
@@ -467,8 +463,7 @@ class TestRayGraph:
         class GetSnapshot(Event[str]): ...
 
         class CustomNode(RayNode):
-            def __init__(self, id) -> None:
-                self.id = id
+            id: int
 
             def take_snapshot(self, epoch: int) -> None:
                 self.snapshot = f"epoch-{self.id}-{epoch}"
@@ -479,8 +474,8 @@ class TestRayGraph:
 
         graph = RayGraphBuilder(
             {
-                "node1": CustomNode(1),
-                "node2": CustomNode(2),
+                "node1": CustomNode(id=1),
+                "node2": CustomNode(id=2),
                 EPOCH_MANAGER_NAME: EpochManagerNode(),
             }
         ).build()
@@ -500,8 +495,7 @@ class TestRayGraph:
         class GetEpoch(Event[str]): ...
 
         class CustomNode(RayNode):
-            def __init__(self, id) -> None:
-                self.id = id
+            id: int
 
             def recovery_from_snapshot(self, epoch: int) -> Any:
                 self.epoch = epoch
@@ -512,9 +506,9 @@ class TestRayGraph:
 
         graph = RayGraphBuilder(
             {
-                "node1": CustomNode(1),
-                "node2": CustomNode(2),
-                EPOCH_MANAGER_NAME: EpochManagerNode(3),
+                "node1": CustomNode(id=1),
+                "node2": CustomNode(id=2),
+                EPOCH_MANAGER_NAME: EpochManagerNode(current_epoch=3),
             }
         ).build()
         graph.start()

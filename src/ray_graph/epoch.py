@@ -3,9 +3,12 @@ from __future__ import annotations
 
 import asyncio
 
+from dataclasses import field
 from typing import TYPE_CHECKING
 
 import sunray
+
+from ray_graph.graph import ActorRemoteOptions
 
 from .event import Event
 from .graph import RayAsyncNode, RayAsyncNodeActor, handle
@@ -15,7 +18,7 @@ if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Generator
     from typing import Any, TypeAlias
 
-    from ray_graph.graph import ActorRemoteOptions, RayGraph
+    from ray_graph.graph import RayGraph
 
 Epoch: TypeAlias = int
 EPOCH_MANAGER_NAME = "EpochManager"
@@ -28,14 +31,14 @@ class NextEpochEvent(Event[None]):
 class EpochManagerNode(RayAsyncNode):  # pragma: no cover
     """The epoch manager node."""
 
-    queue: asyncio.Queue[Epoch]
-
-    def __init__(self, epoch: Epoch | None = None) -> None:
-        """If the epoch is not None, it will trigger all nodes to recover from that epoch."""
-        self.current_epoch = epoch
+    # If the epoch is not None, it will trigger all nodes to recover from that epoch.
+    current_epoch: Epoch | None = None
+    actor_options: ActorRemoteOptions = field(
+        default_factory=lambda: ActorRemoteOptions(num_cpus=0.1)
+    )
 
     async def remote_init(self) -> Any:
-        self.queue = asyncio.Queue(maxsize=1)
+        self.queue: asyncio.Queue[Epoch] = asyncio.Queue(maxsize=1)
         self.current_epoch = 0
         await self.queue.put(self.current_epoch)
 
@@ -49,9 +52,6 @@ class EpochManagerNode(RayAsyncNode):  # pragma: no cover
         assert self.current_epoch is not None
         self.current_epoch += 1
         await self.queue.put(self.current_epoch)
-
-    def actor_options(self) -> ActorRemoteOptions:
-        return {"num_cpus": 0.1}
 
 
 class EpochManagerNodeActor(RayAsyncNodeActor):  # pragma: no cover
