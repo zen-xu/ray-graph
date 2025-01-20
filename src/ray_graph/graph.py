@@ -237,6 +237,7 @@ class RayNodeActor(sunray.ActorMixin):
         span = get_current_span()
         _set_node_span_attributes(self, span)
         event_type = type(event)
+        span.update_name(f"handle[{type(event).__name__}]")
         span.set_attribute("ray_graph.event", event_type.__name__)
         event_handler = self.handlers.get(event_type)
         if event_handler:
@@ -287,6 +288,7 @@ class RayAsyncNodeActor(RayNodeActor):  # pragma: no cover
         span = get_current_span()
         _set_node_span_attributes(self, span)
         event_type = type(event)
+        span.update_name(f"handle[{type(event).__name__}]")
         span.set_attribute("ray_graph.event", event_type.__name__)
         event_handler = self.handlers.get(event_type)
         if event_handler:
@@ -303,9 +305,33 @@ class RayNodeRef:
         self._labels = labels or {}
 
     @cached_property
-    def actor(self) -> sunray.Actor[RayNodeActor]:
+    def actor(self) -> sunray.Actor[RayNodeActor]:  # pragma: no cover
         """The ray node actor."""
-        return sunray.get_actor[RayNodeActor](self.name)
+        actor = sunray.get_actor[RayNodeActor](self.name)
+
+        from ray.util.tracing.tracing_helper import _global_is_tracing_enabled
+
+        if _global_is_tracing_enabled:
+            func = actor._actor_handle.handle._remote.__wrapped__.__wrapped__  # type: ignore
+            from functools import wraps
+
+            from ray.actor import _tracing_actor_method_invocation, wrap_auto_init  # type: ignore
+
+            @wrap_auto_init
+            @_tracing_actor_method_invocation
+            @wraps(func)
+            def wrapper(self, args, kwargs, **options):
+                span = get_current_span()
+                event = args[0]
+                # replace ray span name
+                span.update_name(f"send[{type(event).__name__}]")
+                return func(self, args, kwargs, **options)
+
+            actor._actor_handle.handle._remote = lambda *args, **kwargs: wrapper(  # type: ignore
+                actor._actor_handle.handle, *args, **kwargs
+            )
+
+        return actor
 
     @property
     def name(self) -> NodeName:
