@@ -43,6 +43,7 @@ _node_context = None
 _graph: RayGraphRef | None = None
 _current_epoch: Epoch = -1
 
+
 @dataclass(frozen=True)
 class RayNodeContext:
     """The context of a RayGraph node."""
