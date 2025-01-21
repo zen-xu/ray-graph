@@ -31,8 +31,8 @@ class NextEpochEvent(Event[None]):
 class EpochManagerNode(RayAsyncNode):  # pragma: no cover
     """The epoch manager node."""
 
-    # If the epoch is not None, it will trigger all nodes to recover from that epoch.
-    current_epoch: Epoch | None = None
+    # If the epoch is not -1, it will trigger all nodes to recover from that epoch.
+    current_epoch: Epoch = -1
     actor_options: ActorRemoteOptions = field(
         default_factory=lambda: ActorRemoteOptions(num_cpus=0.1)
     )
@@ -49,7 +49,6 @@ class EpochManagerNode(RayAsyncNode):  # pragma: no cover
 
     @handle(NextEpochEvent)
     async def handle_next_epoch(self, _event: NextEpochEvent) -> None:
-        assert self.current_epoch is not None
         self.current_epoch += 1
         await self.queue.put(self.current_epoch)
 
