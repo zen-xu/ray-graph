@@ -67,12 +67,13 @@ class EpochManagerNodeActor(RayAsyncNodeActor):  # pragma: no cover
 def epochs(graph: RayGraph) -> Generator[Epoch, None, None]:  # pragma: no cover
     """Get the epoch from EpochManager."""
     actor = sunray.get_actor[EpochManagerNodeActor](EPOCH_MANAGER_NAME)
+    nodes = graph.filter(lambda node: node.name != EPOCH_MANAGER_NAME)
     for epoch_ref in actor.methods.epochs.remote():
         epoch = sunray.get(epoch_ref)
+        sunray.get([node.actor.methods.update_epoch.remote(epoch) for node in nodes])
         if epoch != 0:
             # take previous epoch snapshot
             previous_epoch = epoch - 1
-            nodes = graph.filter(lambda node: node.name != EPOCH_MANAGER_NAME)
             sunray.get([node.actor.methods.take_snapshot.remote(previous_epoch) for node in nodes])
         try:
             from opentelemetry.trace import get_tracer

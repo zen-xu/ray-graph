@@ -2,6 +2,7 @@
     "python.defaultInterpreterPath": "${workspaceFolder}/.pixi/envs/default/bin/python",
     "ruff.fixAll": false,
     "editor.formatOnSave": true,
+    "ruff.importStrategy": "useBundled",
     "[python]": {
         "editor.defaultFormatter": "charliermarsh.ruff",
         "editor.codeActionsOnSave": {

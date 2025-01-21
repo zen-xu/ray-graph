@@ -41,7 +41,7 @@ PlacementStrategy = Literal["PACK", "SPREAD", "STRICT_PACK", "STRICT_SPREAD"]
 
 _node_context = None
 _graph: RayGraphRef | None = None
-
+_current_epoch: Epoch = -1
 
 @dataclass(frozen=True)
 class RayNodeContext:
@@ -55,6 +55,14 @@ class RayNodeContext:
 
     node_name: NodeName
     "ray node name"
+
+    @property
+    def current_epoch(self) -> Epoch:
+        """The current epoch."""
+        global _current_epoch
+        if _current_epoch == -1:
+            raise ValueError("current epoch is not set")
+        return _current_epoch
 
 
 _Event_co = TypeVar("_Event_co", bound="Event", covariant=True)
@@ -244,6 +252,12 @@ class RayNodeActor(sunray.ActorMixin):
             return event_handler(event)  # type: ignore
 
         raise ValueError(f"no handler for event {event_type}")
+
+    @sunray.remote_method
+    def update_epoch(self, epoch: Epoch) -> None:  # pragma: no cover
+        """Update the epoch."""
+        global _current_epoch
+        _current_epoch = epoch
 
     @sunray.remote_method
     def take_snapshot(self, epoch: Epoch) -> None:  # pragma: no cover
