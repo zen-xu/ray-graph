@@ -20,6 +20,7 @@ def field(
     *,
     default: _T,
     repr: bool = False,
+    kw_only: bool = True,
     init: bool = True,
     hash: bool | None = None,
     compare: bool = True,
@@ -31,6 +32,7 @@ def field(
     *,
     default_factory: Callable[[], _T],
     repr: bool = False,
+    kw_only: bool = True,
     init: bool = True,
     hash: bool | None = None,
     compare: bool = True,
@@ -41,6 +43,7 @@ def field(
 def field(
     *,
     repr: bool = False,
+    kw_only: bool = True,
     init: bool = True,
     hash: bool | None = None,
     compare: bool = True,
@@ -52,6 +55,7 @@ def field(
     default=dc.MISSING,
     default_factory=dc.MISSING,
     repr=False,
+    kw_only=True,
     init=True,
     hash=None,
     compare=True,
@@ -61,13 +65,14 @@ def field(
         default=default,
         default_factory=default_factory,
         repr=repr,
+        kw_only=kw_only,
         init=init,
         hash=hash,
         compare=compare,
     )
 
 
-@dataclass_transform(kw_only_default=True, frozen_default=True, field_specifiers=(field,))
+@dataclass_transform(kw_only_default=True, frozen_default=True, field_specifiers=(field, dc.field))
 class _EventMeta(type):
     def __new__(cls, name: str, bases: tuple[type], dct: dict):
         annotations = dct.get("__annotations__", {})
