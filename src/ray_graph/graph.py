@@ -366,6 +366,15 @@ class RayNodeRef:
             name=f"{self.name}.handle[{type(event).__name__}]", **extra_ray_opts
         ).remote(event)
 
+    def __hash__(self) -> int:  # noqa: D105
+        return hash(self.name)
+
+    def __eq__(self, value: object) -> bool:  # noqa: D105
+        return isinstance(value, RayNodeRef) and value.name == self.name
+
+    def __repr__(self) -> str:  # noqa: D105
+        return f"RayNodeRef({self.name})"
+
 
 class RayGraphBuilder:
     """The graph builder of ray nodes."""

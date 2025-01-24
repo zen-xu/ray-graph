@@ -140,6 +140,13 @@ class TestRayNode:
         assert sunray.get(node_ref.send(GetProcName())) == f"ray::{name}.handle[GetProcName]"
         sunray.kill(node_actor)
 
+    def test_ray_node_hash(self):
+        assert hash(RayNodeRef("node1")) == hash(RayNodeRef("node1"))
+
+    def test_ray_node_eq(self):
+        assert RayNodeRef("node1") == RayNodeRef("node1")
+        assert RayNodeRef("node1") != RayNodeRef("node2")
+
     def test_ray_node_context(self, init_ray):
         class GetContext(Event): ...
 
