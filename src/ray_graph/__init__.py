@@ -1,4 +1,4 @@
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 
 from .epoch import EPOCH_MANAGER_NAME as EPOCH_MANAGER_NAME
 from .epoch import EpochManagerNode as EpochManagerNode
