@@ -196,6 +196,7 @@ class TestRayGraph:
         builder.set_parent("node2", "node1")
         builder.set_parent("node2", "node1")  # add duplicate edge
         builder.set_children("node2", ["node3"])
+        builder.set_associated("node1", ["node3"])
 
         got = builder._dag.to_dot(node_attr=lambda n: {"label": n.name})
         got = got and got.strip()
@@ -211,6 +212,7 @@ class TestRayGraph:
             """
         ).strip()
         assert got == expect
+        assert builder._associated[0] == [2]
 
     @pytest.fixture
     def graph_ref(self) -> RayGraphRef:
@@ -228,7 +230,7 @@ class TestRayGraph:
             leaf1    leaf2
         """
 
-        dag: rwx.PyDAG[RayNodeRef, None] = rwx.PyDAG()
+        dag: rwx.PyDAG[RayNodeRef, str] = rwx.PyDAG()
         root1, root2, node1, node2, leaf1, leaf2 = dag.add_nodes_from(
             [
                 RayNodeRef("root1", labels={"kind": "root"}),
