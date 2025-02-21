@@ -881,7 +881,7 @@ def _wait_node_init(
 
     if epoch_manager := node_actors.get(EPOCH_MANAGER_NAME):
         epoch_manager_node = cast(EpochManagerNode, epoch_manager["node"])
-        if epoch_manager_node.current_epoch is not None:
+        if epoch_manager_node.current_epoch > 0:
             # recover all nodes at the given epoch snapshot
             action = f"Recovery epoch({epoch_manager_node.current_epoch}) {{task.description}}"
             not_readies = [
