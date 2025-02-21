@@ -380,9 +380,10 @@ class RayGraphBuilder:
     """The graph builder of ray nodes."""
 
     def __init__(self, total_nodes: Mapping[NodeName, RayNode]):
-        self._dag: rwx.PyDAG[RayNodeRef, None] = rwx.PyDAG(check_cycle=True)
+        self._dag: rwx.PyDAG[RayNodeRef, str] = rwx.PyDAG(check_cycle=True)
         self._total_nodes: dict[NodeName, RayNode] = {}
         self._node_name_ids: dict[NodeName, int] = {}
+        self._associated: dict[int, list[int]] = defaultdict(list)
         for name, node in total_nodes.items():
             self.add_node(name, node)
 
@@ -396,16 +397,23 @@ class RayGraphBuilder:
         child_id = self._node_name_ids[child]
         parent_id = self._node_name_ids[parent]
         if not self._dag.has_edge(parent_id, child_id):
-            self._dag.add_edge(parent_id, child_id, None)
+            self._dag.add_edge(parent_id, child_id, "")
 
     def set_children(self, parent: NodeName, children: list[NodeName]) -> None:
         """Set the children of the parent node."""
         for child in children:
             self.set_parent(child, parent)
 
+    def set_associated(self, node_name: NodeName, associated_nodes: list[NodeName]):
+        """Set the associated nodes of the given node."""
+        node_id = self._node_name_ids[node_name]
+        for associated_node in associated_nodes:
+            assoc_id = self._node_name_ids[associated_node]
+            self._associated[node_id].append(assoc_id)
+
     def build(self) -> RayGraph:  # pragma: no cover
         """Build the ray graph."""
-        return RayGraph(self._dag, self._total_nodes)
+        return RayGraph(self._dag, self._total_nodes, self._associated)
 
 
 class PlacementWarning(Warning):
@@ -416,10 +424,14 @@ class RayGraph:  # pragma: no cover
     """The graph of ray nodes."""
 
     def __init__(
-        self, dag: rwx.PyDAG[RayNodeRef, None], total_nodes: Mapping[NodeName, RayNode]
+        self,
+        dag: rwx.PyDAG[RayNodeRef, str],
+        total_nodes: Mapping[NodeName, RayNode],
+        associated: dict[int, list[int]],
     ) -> None:
         self._graph_ref = RayGraphRef(dag)
         self._total_nodes = total_nodes
+        self._associated = associated
         self._node_actors: Mapping[NodeName, sunray.Actor[RayNodeActor]] | None = None
 
     @property
@@ -760,10 +772,22 @@ class RayGraph:  # pragma: no cover
                 "fontsize": "12",
             }
         )
+        dag = self._graph_ref._dag.copy()
+        for node_id, associated_ids in self._associated.items():
+            [
+                dag.add_edge(node_id, associated_id, "associated")
+                for associated_id in associated_ids
+            ]
+
+        def edge_attr_fn(edge: str):
+            if edge == "associated":
+                return {"style": "dashed", "dir": "none"}
+            return edge_attr or {}
+
         return graphviz_draw(
-            self._graph_ref._dag,
+            dag,
             node_attr_fn=node_attr_fn,
-            edge_attr_fn=lambda _: edge_attr or {},
+            edge_attr_fn=edge_attr_fn,
             graph_attr=graph_attr,
             filename=filename,
             image_type=image_type,
@@ -774,7 +798,7 @@ class RayGraph:  # pragma: no cover
 class RayGraphRef:
     """The graph reference of ray nodes."""
 
-    def __init__(self, dag: rwx.PyDAG[RayNodeRef, None]):
+    def __init__(self, dag: rwx.PyDAG[RayNodeRef, str]):
         self._dag = dag
         self._node_ids: Mapping[NodeName, int] = {
             node_ref.name: node_id for node_id, node_ref in enumerate(self._dag.nodes())
