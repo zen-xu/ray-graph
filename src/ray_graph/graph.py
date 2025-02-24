@@ -230,7 +230,7 @@ class RayNodeActor(sunray.ActorMixin):
         graph._graph = ray_graph
 
     def __repr__(self) -> str:  # noqa: D105
-        return f"{self.ray_node.__class__.__name__}({self.name})"
+        return self.name
 
     @sunray.remote_method
     def remote_init(self) -> str:
