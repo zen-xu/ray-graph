@@ -1,6 +1,6 @@
 [project]
 name = "ray-graph"
-version = "0.6.1"
+version = "0.6.2"
 authors = [{ name = "ZhengYu, Xu", email = "zen-xu@outlook.com" }]
 description = "Help to build ray actor graph"
 classifiers = [
