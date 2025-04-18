@@ -870,7 +870,7 @@ def _wait_placement_group_ready(
     from rich.spinner import Spinner
     from rich.table import Table
 
-    pg_status = {name: "Pending" for name in pg_readies}
+    pg_status = dict.fromkeys(pg_readies, "Pending")
 
     def render_table(pg_status):
         table = Table(title="Placement Group Status")
@@ -904,7 +904,7 @@ def _wait_node_init(
     from .epoch import EPOCH_MANAGER_NAME, EpochManagerNode
 
     if epoch_manager := node_actors.get(EPOCH_MANAGER_NAME):
-        epoch_manager_node = cast(EpochManagerNode, epoch_manager["node"])
+        epoch_manager_node = cast("EpochManagerNode", epoch_manager["node"])
         if epoch_manager_node.current_epoch > 0:
             # recover all nodes at the given epoch snapshot
             action = f"Recovery epoch({epoch_manager_node.current_epoch}) {{task.description}}"
