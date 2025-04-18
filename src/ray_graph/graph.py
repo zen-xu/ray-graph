@@ -513,7 +513,8 @@ class RayGraph:  # pragma: no cover
                             )
                         yield (
                             node_name,
-                            determine_actor_class(node)
+                            # we use node class name as the actor class name
+                            type(node.__class__.__name__, (determine_actor_class(node),), {})  # type: ignore[attr-defined]
                             .new_actor()
                             .options(**options)
                             .remote(node_name, node, graph_obj_ref),
@@ -522,7 +523,8 @@ class RayGraph:  # pragma: no cover
                 self._node_actors = dict(create_node_actors())
             else:
                 self._node_actors = {
-                    name: determine_actor_class(node)
+                    # we use node class name as the actor class name
+                    name: type(node.__class__.__name__, (determine_actor_class(node),), {})  # type: ignore[attr-defined]
                     .new_actor()
                     .options(name=name, **node.actor_options)
                     .remote(name, node, graph_obj_ref)
