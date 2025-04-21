@@ -997,7 +997,7 @@ def get_current_span() -> Span:  # pragma: no cover
 
 try:
     from opentelemetry.trace import StatusCode as StatusCode
-except ImportError:
+except ImportError:  # pragma: no cover
 
     class StatusCode(enum.Enum):  # type: ignore[no-redef] # noqa: D101
         UNSET = 0
@@ -1005,7 +1005,7 @@ except ImportError:
         ERROR = 2
 
 
-def _try_force_flush_trace():
+def _try_force_flush_trace():  # pragma: no cover
     from contextlib import suppress
 
     with suppress(Exception):
