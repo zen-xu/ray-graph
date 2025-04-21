@@ -999,7 +999,7 @@ try:
     from opentelemetry.trace import StatusCode as StatusCode
 except ImportError:
 
-    class StatusCode(enum.Enum):  # noqa: D101
+    class StatusCode(enum.Enum):  # type: ignore[no-redef] # noqa: D101
         UNSET = 0
         OK = 1
         ERROR = 2
