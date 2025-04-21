@@ -238,9 +238,11 @@ class RayNodeActor(sunray.ActorMixin):
         """Invoke ray_node remote init method."""
         span = get_current_span()
         _set_node_span_attributes(self, span)
-        self.ray_node.remote_init()
-        span.set_status(StatusCode.OK)
-        _try_force_flush_trace()
+        try:
+            self.ray_node.remote_init()
+            span.set_status(StatusCode.OK)
+        finally:
+            _try_force_flush_trace()
         return self.name
 
     @sunray.remote_method
@@ -253,9 +255,11 @@ class RayNodeActor(sunray.ActorMixin):
         span.set_attribute("ray_graph.event", event_type.__name__)
         event_handler = self.handlers.get(event_type)
         if event_handler:
-            result = event_handler(event)  # type: ignore
-            span.set_status(StatusCode.OK)
-            _try_force_flush_trace()
+            try:
+                result = event_handler(event)  # type: ignore
+                span.set_status(StatusCode.OK)
+            finally:
+                _try_force_flush_trace()
             return result
 
         raise ValueError(f"no handler for event {event_type}")
@@ -271,18 +275,22 @@ class RayNodeActor(sunray.ActorMixin):
         """Take current epoch snapshot."""
         span = get_current_span()
         _set_node_span_attributes(self, span)
-        self.ray_node.take_snapshot(epoch)
-        span.set_status(StatusCode.OK)
-        _try_force_flush_trace()
+        try:
+            self.ray_node.take_snapshot(epoch)
+            span.set_status(StatusCode.OK)
+        finally:
+            _try_force_flush_trace()
 
     @sunray.remote_method
     def recovery_from_snapshot(self, epoch: Epoch) -> str:  # pragma: no cover
         """Recovery node from the given epoch snapshot."""
         span = get_current_span()
         _set_node_span_attributes(self, span)
-        self.ray_node.recovery_from_snapshot(epoch)
-        span.set_status(StatusCode.OK)
-        _try_force_flush_trace()
+        try:
+            self.ray_node.recovery_from_snapshot(epoch)
+            span.set_status(StatusCode.OK)
+        finally:
+            _try_force_flush_trace()
         return self.name
 
 
@@ -296,9 +304,11 @@ class RayAsyncNodeActor(RayNodeActor):  # pragma: no cover
         """Invoke ray_node remote init method."""
         span = get_current_span()
         _set_node_span_attributes(self, span)
-        await self.ray_node.remote_init()
-        span.set_status(StatusCode.OK)
-        _try_force_flush_trace()
+        try:
+            await self.ray_node.remote_init()
+            span.set_status(StatusCode.OK)
+        finally:
+            _try_force_flush_trace()
         return self.name
 
     @sunray.remote_method
@@ -306,9 +316,11 @@ class RayAsyncNodeActor(RayNodeActor):  # pragma: no cover
         """Recovery node from the given epoch snapshot."""
         span = get_current_span()
         _set_node_span_attributes(self, span)
-        await self.ray_node.recovery_from_snapshot(epoch)
-        span.set_status(StatusCode.OK)
-        _try_force_flush_trace()
+        try:
+            await self.ray_node.recovery_from_snapshot(epoch)
+            span.set_status(StatusCode.OK)
+        finally:
+            _try_force_flush_trace()
         return self.name
 
     @sunray.remote_method
@@ -321,9 +333,11 @@ class RayAsyncNodeActor(RayNodeActor):  # pragma: no cover
         span.set_attribute("ray_graph.event", event_type.__name__)
         event_handler = self.handlers.get(event_type)
         if event_handler:
-            result = await event_handler(event)  # type: ignore
-            span.set_status(StatusCode.OK)
-            _try_force_flush_trace()
+            try:
+                result = await event_handler(event)  # type: ignore
+                span.set_status(StatusCode.OK)
+            finally:
+                _try_force_flush_trace()
             return result
 
         raise ValueError(f"no handler for event {event_type}")
@@ -357,9 +371,11 @@ class RayNodeRef:
                 event = args[0]
                 # replace ray span name
                 span.update_name(f"send[{type(event).__name__}]")
-                result = func(self, args, kwargs, **options)
-                span.set_status(StatusCode.OK)
-                _try_force_flush_trace()
+                try:
+                    result = func(self, args, kwargs, **options)
+                    span.set_status(StatusCode.OK)
+                finally:
+                    _try_force_flush_trace()
                 return result
 
             actor._actor_handle.handle._remote = lambda *args, **kwargs: wrapper(  # type: ignore
