@@ -338,8 +338,14 @@ class RayNodeRef:
             def wrapper(self, args, kwargs, **options):
                 span = get_current_span()
                 event = args[0]
+
+                import ray
+
                 # replace ray span name
-                span.update_name(f"send[{type(event).__name__}]")
+                if isinstance(event, ray.ObjectRef):
+                    span.update_name(f"send[{type(ray.get(event)).__name__}]")
+                else:
+                    span.update_name(f"send[{type(event).__name__}]")
                 return func(self, args, kwargs, **options)
 
             actor._actor_handle.handle._remote = lambda *args, **kwargs: wrapper(  # type: ignore
