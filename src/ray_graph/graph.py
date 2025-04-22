@@ -369,8 +369,15 @@ class RayNodeRef:
             def wrapper(self, args, kwargs, **options):
                 span = get_current_span()
                 event = args[0]
+
+                import ray
+
                 # replace ray span name
-                span.update_name(f"send[{type(event).__name__}]")
+                if isinstance(event, ray.ObjectRef):
+                    span.update_name(f"send[{type(ray.get(event)).__name__}]")
+                else:
+                    span.update_name(f"send[{type(event).__name__}]")
+
                 try:
                     result = func(self, args, kwargs, **options)
                     span.set_status(StatusCode.OK)
