@@ -368,18 +368,23 @@ class RayNodeRef:
             @wraps(func)
             def wrapper(self, args, kwargs, **options):
                 span = get_current_span()
-                event = args[0]
+                event, *extra_args = args
 
                 import ray
 
                 # replace ray span name
                 if isinstance(event, ray.ObjectRef):
                     span.update_name(f"send[{type(ray.get(event)).__name__}]")
+                    event_ref = event
                 else:
                     span.update_name(f"send[{type(event).__name__}]")
-
+                    event_ref = ray.put(event)
+                [(event_buffer, _)] = ray._private.worker.global_worker.core_worker.get_if_local(  # type: ignore
+                    [event_ref]
+                )
+                span.set_attribute("ray_graph.event.size", event_buffer.size)
                 try:
-                    result = func(self, args, kwargs, **options)
+                    result = func(self, [event_ref, *extra_args], kwargs, **options)
                     span.set_status(StatusCode.OK)
                 finally:
                     _try_force_flush_trace()
