@@ -11,11 +11,11 @@ import sunray
 from ray_graph.graph import ActorRemoteOptions
 
 from .event import Event
-from .graph import RayAsyncNode, RayAsyncNodeActor, handle
+from .graph import RayAsyncNode, RayAsyncNodeActor, RayNodeRef, handle
 
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, Generator
+    from collections.abc import AsyncGenerator, Callable, Generator
     from typing import Any, TypeAlias
 
     from ray_graph.graph import RayGraph
@@ -65,16 +65,32 @@ class EpochManagerNodeActor(RayAsyncNodeActor):  # pragma: no cover
 
 
 def epochs(
-    graph: RayGraph, *, disable_snapshot: bool = False
+    graph: RayGraph,
+    *,
+    disable_snapshot: bool = False,
+    update_epoch_nodes_filter: Callable[[RayNodeRef], bool] = lambda node: node.name
+    != EPOCH_MANAGER_NAME,
+    snapshot_nodes_filter: Callable[[RayNodeRef], bool] = lambda node: node.name
+    != EPOCH_MANAGER_NAME,
 ) -> Generator[Epoch, None, None]:  # pragma: no cover
     """Get the epoch from EpochManager."""
     actor = sunray.get_actor[EpochManagerNodeActor](EPOCH_MANAGER_NAME)
-    nodes = graph.filter(lambda node: node.name != EPOCH_MANAGER_NAME)
-    for epoch_ref in actor.methods.epochs.remote():
-        epoch = sunray.get(epoch_ref)
-        sunray.get([node.actor.methods.update_epoch.remote(epoch) for node in nodes])
+    update_epoch_nodes = graph.filter(update_epoch_nodes_filter)
+    snapshot_nodes = graph.filter(snapshot_nodes_filter)
+
+    def handle_epoch(epoch: Epoch) -> None:
+        sunray.get([node.actor.methods.update_epoch.remote(epoch) for node in update_epoch_nodes])
         if epoch != 0 and not disable_snapshot:
             # take previous epoch snapshot
             previous_epoch = epoch - 1
-            sunray.get([node.actor.methods.take_snapshot.remote(previous_epoch) for node in nodes])
+            sunray.get(
+                [
+                    node.actor.methods.take_snapshot.remote(previous_epoch)
+                    for node in snapshot_nodes
+                ]
+            )
+
+    for epoch_ref in actor.methods.epochs.remote():
+        epoch = sunray.get(epoch_ref)
+        handle_epoch(epoch)
         yield epoch
