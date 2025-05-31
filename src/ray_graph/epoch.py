@@ -64,14 +64,16 @@ class EpochManagerNodeActor(RayAsyncNodeActor):  # pragma: no cover
             yield await self.ray_node.queue.get()
 
 
-def epochs(graph: RayGraph) -> Generator[Epoch, None, None]:  # pragma: no cover
+def epochs(
+    graph: RayGraph, *, disable_snapshot: bool = False
+) -> Generator[Epoch, None, None]:  # pragma: no cover
     """Get the epoch from EpochManager."""
     actor = sunray.get_actor[EpochManagerNodeActor](EPOCH_MANAGER_NAME)
     nodes = graph.filter(lambda node: node.name != EPOCH_MANAGER_NAME)
     for epoch_ref in actor.methods.epochs.remote():
         epoch = sunray.get(epoch_ref)
         sunray.get([node.actor.methods.update_epoch.remote(epoch) for node in nodes])
-        if epoch != 0:
+        if epoch != 0 and not disable_snapshot:
             # take previous epoch snapshot
             previous_epoch = epoch - 1
             sunray.get([node.actor.methods.take_snapshot.remote(previous_epoch) for node in nodes])
