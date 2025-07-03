@@ -211,6 +211,8 @@ def _set_node_span_attributes(node: RayNodeActor, span: Span):  # pragma: no cov
     span.set_attribute("ray_graph.node.class", node.ray_node.__class__.__name__)
     for k, v in node.labels.items():
         span.set_attribute(f"ray_graph.node.label.{k}", v)
+    if _current_epoch != -1:
+        span.set_attribute("ray_graph.epoch", _current_epoch)
 
 
 class RayNodeActor(sunray.ActorMixin):
